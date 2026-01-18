@@ -247,6 +247,7 @@ const KeyRow = memo(
     )
   },
 )
+KeyRow.displayName = 'KeyRow'
 
 type ScaleEditorCardProps = {
   scaleId: number
@@ -320,6 +321,7 @@ const ScaleEditorCard = memo(({ scaleId }: ScaleEditorCardProps) => {
     </div>
   )
 })
+ScaleEditorCard.displayName = 'ScaleEditorCard'
 
 type ScalePreviewCardProps = {
   scaleId: number
@@ -401,6 +403,7 @@ const ScalePreviewCard = memo(
     )
   },
 )
+ScalePreviewCard.displayName = 'ScalePreviewCard'
 
 export default function CreatePage() {
   const params = useParams<{ id: string }>()
@@ -410,7 +413,10 @@ export default function CreatePage() {
   const setPaletteName = usePaletteEditorStore((state) => state.setPaletteName)
   const scaleOrder = usePaletteEditorStore((state) => state.scaleOrder)
   const addScale = usePaletteEditorStore((state) => state.addScale)
-  const [lastSavedAt, setLastSavedAt] = useState<number | null>(null)
+  const [lastSavedAt, setLastSavedAt] = useState<{
+    paletteId: number
+    timestamp: number
+  } | null>(null)
   const [optimization, setOptimization] = useState(
     optimizations[0]?.name ?? 'Universal',
   )
@@ -446,20 +452,7 @@ export default function CreatePage() {
     const match = stored.find((palette) => palette.id === paletteId)
     const next = match ?? seedPalette
     setPalette(next)
-    setLastSavedAt(null)
   }, [paletteId, setPalette])
-
-  useEffect(() => {
-    const unsubscribe = usePaletteEditorStore.subscribe(
-      (state) => state.scales,
-      () => setLastSavedAt(null),
-    )
-    return unsubscribe
-  }, [])
-
-  useEffect(() => {
-    setLastSavedAt(null)
-  }, [paletteName])
 
   const handleSavePalette = () => {
     if (hasInvalidKeys) return
@@ -488,7 +481,7 @@ export default function CreatePage() {
     }
 
     upsertPalette(nextRecord)
-    setLastSavedAt(Date.now())
+    setLastSavedAt({ paletteId, timestamp: Date.now() })
   }
 
   return (
@@ -519,7 +512,7 @@ export default function CreatePage() {
               >
                 Save palette
               </Button>
-              {lastSavedAt ? (
+              {lastSavedAt?.paletteId === paletteId ? (
                 <p className="text-xs text-muted-foreground">Saved just now.</p>
               ) : null}
               {hasInvalidKeys ? (

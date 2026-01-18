@@ -103,7 +103,8 @@ export const usePaletteEditorStore = create<PaletteEditorState>((set) => ({
     }),
   deleteScale: (id) =>
     set((state) => {
-      const { [id]: removed, ...rest } = state.scales
+      const rest = { ...state.scales }
+      delete rest[id]
       return {
         scaleOrder: state.scaleOrder.filter((scaleId) => scaleId !== id),
         scales: rest,

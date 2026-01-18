@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { AlertTriangle, Anchor, Key, Lock } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
@@ -26,7 +26,6 @@ import {
   loadPalettes,
   savePalettes,
   seedPalette,
-  type PaletteRecord,
 } from '@/src/lib/palettes'
 
 const contrastOptions = [
@@ -116,18 +115,15 @@ export default function DashboardPage() {
   )
   const [contrast, setContrast] = useState(contrastOptions[0])
 
-  const [palettes, setPalettes] = useState<PaletteRecord[]>([seedPalette])
-  const [selectedId, setSelectedId] = useState(seedPalette.id)
-
-  useEffect(() => {
+  const [paletteState, setPaletteState] = useState(() => {
     const stored = loadPalettes()
-    setPalettes(stored)
-    setSelectedId(stored[0]?.id ?? seedPalette.id)
-    if (stored.length === 0) {
-      savePalettes([seedPalette])
+    return {
+      palettes: stored,
+      selectedId: stored[0]?.id ?? seedPalette.id,
     }
-  }, [])
+  })
 
+  const { palettes, selectedId } = paletteState
   const selectedPalette =
     palettes.find((palette) => palette.id === selectedId) ?? palettes[0]
 
@@ -148,13 +144,15 @@ export default function DashboardPage() {
   }, [optimization])
 
   const handleCreatePalette = () => {
-    setPalettes((prev) => {
-      const nextPalette = createPaletteRecord(prev)
-      const next = [...prev, nextPalette]
+    setPaletteState((prev) => {
+      const nextPalette = createPaletteRecord(prev.palettes)
+      const next = [...prev.palettes, nextPalette]
       savePalettes(next)
-      setSelectedId(nextPalette.id)
       router.push(`/palettes/${nextPalette.id}/edit`)
-      return next
+      return {
+        palettes: next,
+        selectedId: nextPalette.id,
+      }
     })
   }
 
@@ -235,7 +233,12 @@ export default function DashboardPage() {
                     paletteItem.id === selectedId ? 'secondary' : 'ghost'
                   }
                   className="w-full justify-between"
-                  onClick={() => setSelectedId(paletteItem.id)}
+                  onClick={() =>
+                    setPaletteState((prev) => ({
+                      ...prev,
+                      selectedId: paletteItem.id,
+                    }))
+                  }
                 >
                   <span className="text-left">{paletteItem.name}</span>
                   <Badge variant="secondary">
