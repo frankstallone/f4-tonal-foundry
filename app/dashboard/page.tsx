@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type ReactElement } from 'react'
 import { useRouter } from 'next/navigation'
 import { AlertTriangle, Anchor, Key, Lock } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
@@ -27,6 +27,7 @@ import {
   savePalettes,
   seedPalette,
 } from '@/src/lib/palettes'
+import { cn } from '@/lib/utils'
 
 const contrastOptions = [
   'CIE L* (d65)',
@@ -73,26 +74,38 @@ const swatchTextColor = (swatch: Swatch, contrast: string) => {
 }
 
 const getSwatchIcons = (swatch: Swatch) => {
-  const icons: Array<{ key: string; node: JSX.Element }> = []
+  const icons: Array<{ key: string; node: ReactElement }> = []
 
   if (swatch.isAnchor) {
     icons.push({
       key: 'anchor',
-      node: <Anchor size={12} strokeWidth={1.8} title="Anchor color" />,
+      node: (
+        <span role="img" aria-label="Anchor color">
+          <Anchor size={12} strokeWidth={1.8} />
+        </span>
+      ),
     })
   }
 
   if (swatch.isKey) {
     icons.push({
       key: 'key',
-      node: <Key size={12} strokeWidth={1.8} title="Key color" />,
+      node: (
+        <span role="img" aria-label="Key color">
+          <Key size={12} strokeWidth={1.8} />
+        </span>
+      ),
     })
   }
 
   if (swatch.isLock) {
     icons.push({
       key: 'lock',
-      node: <Lock size={12} strokeWidth={1.8} title="Locked endpoint" />,
+      node: (
+        <span role="img" aria-label="Locked endpoint">
+          <Lock size={12} strokeWidth={1.8} />
+        </span>
+      ),
     })
   }
 
@@ -100,7 +113,9 @@ const getSwatchIcons = (swatch: Swatch) => {
     icons.push({
       key: 'gamut',
       node: (
-        <AlertTriangle size={12} strokeWidth={1.8} title="Out of sRGB gamut" />
+        <span role="img" aria-label="Out of sRGB gamut">
+          <AlertTriangle size={12} strokeWidth={1.8} />
+        </span>
       ),
     })
   }
@@ -162,7 +177,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-muted/40">
+    <div className="min-h-dvh bg-muted/40">
       <div className="mx-auto grid w-full max-w-[1400px] gap-6 p-6 lg:grid-cols-[320px_1fr]">
         <aside className="space-y-6">
           <Card>
@@ -175,7 +190,14 @@ export default function DashboardPage() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <p className="text-sm font-medium">Optimization</p>
-                <Select value={optimization} onValueChange={setOptimization}>
+                <Select
+                  value={optimization}
+                  onValueChange={(value) =>
+                    setOptimization(
+                      value ?? optimizations[0]?.name ?? 'Universal',
+                    )
+                  }
+                >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select optimization" />
                   </SelectTrigger>
@@ -190,7 +212,12 @@ export default function DashboardPage() {
               </div>
               <div className="space-y-2">
                 <p className="text-sm font-medium">Contrast</p>
-                <Select value={contrast} onValueChange={setContrast}>
+                <Select
+                  value={contrast}
+                  onValueChange={(value) =>
+                    setContrast(value ?? contrastOptions[0])
+                  }
+                >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select contrast" />
                   </SelectTrigger>
@@ -265,7 +292,7 @@ export default function DashboardPage() {
                 </Badge>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-[repeat(auto-fit,minmax(64px,1fr))] gap-3">
+                <div className="grid grid-cols-swatch gap-3">
                   {scale.swatches.map((swatch, idx) => {
                     const weightLabel = optimizationWeights.get(
                       Number(swatch.weight),
@@ -274,21 +301,24 @@ export default function DashboardPage() {
                     return (
                       <div
                         key={`${scale.id}-${idx}`}
-                        className="flex flex-col items-center gap-2 text-[11px] font-medium"
+                        className="flex flex-col items-center gap-2 text-xs font-medium tabular-nums"
                       >
                         <span className="text-muted-foreground">
                           {weightLabel ?? '—'}
                         </span>
                         <div
-                          className="flex h-16 w-full flex-col justify-between rounded-lg border px-2 py-1 text-[10px] shadow-sm"
+                          className={cn(
+                            'flex h-16 w-full flex-col justify-between rounded-lg border px-2 py-1 text-2xs shadow-sm',
+                            isDisabled &&
+                              'border-dashed bg-muted/60 text-muted-foreground opacity-80',
+                          )}
                           style={{
                             background: isDisabled
-                              ? 'repeating-linear-gradient(-45deg, #f1f1f1, #f1f1f1 9px, #e3e3e3 9px, #e3e3e3 18px)'
+                              ? undefined
                               : swatch.value.destination,
                             color: isDisabled
-                              ? '#6b7280'
+                              ? undefined
                               : swatchTextColor(swatch, contrast),
-                            opacity: isDisabled ? 0.6 : 1,
                           }}
                         >
                           <div className="flex items-center justify-between">

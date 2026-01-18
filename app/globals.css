@@ -124,3 +124,14 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  .grid-cols-swatch {
+    grid-template-columns: repeat(auto-fit, minmax(4rem, 1fr));
+  }
+
+  .text-2xs {
+    font-size: 0.625rem;
+    line-height: 0.875rem;
+  }
+}

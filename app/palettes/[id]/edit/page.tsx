@@ -4,9 +4,9 @@ import {
   memo,
   useCallback,
   useDeferredValue,
-  useEffect,
   useMemo,
   useState,
+  type ReactElement,
 } from 'react'
 import { useParams } from 'next/navigation'
 import Color from 'colorjs.io'
@@ -21,6 +21,17 @@ import {
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import {
   Card,
   CardContent,
@@ -51,13 +62,13 @@ import {
 import { buildScale, colorToHex, optimizations } from '@/src/engine'
 import type { PaletteSeed, Swatch } from '@/src/engine'
 import {
-  loadPalettes,
   seedPalette,
   upsertPalette,
   type PaletteRecord,
 } from '@/src/lib/palettes'
 import { usePaletteEditorStore } from '@/src/store/palette-editor-store'
 import { parseColor } from '@react-stately/color'
+import { cn } from '@/lib/utils'
 
 const contrastOptions = [
   'CIE L* (d65)',
@@ -104,26 +115,38 @@ const swatchTextColor = (swatch: Swatch, contrast: string) => {
 }
 
 const getSwatchIcons = (swatch: Swatch) => {
-  const icons: Array<{ key: string; node: JSX.Element }> = []
+  const icons: Array<{ key: string; node: ReactElement }> = []
 
   if (swatch.isAnchor) {
     icons.push({
       key: 'anchor',
-      node: <Anchor size={12} strokeWidth={1.8} title="Anchor color" />,
+      node: (
+        <span role="img" aria-label="Anchor color">
+          <Anchor size={12} strokeWidth={1.8} />
+        </span>
+      ),
     })
   }
 
   if (swatch.isKey) {
     icons.push({
       key: 'key',
-      node: <Key size={12} strokeWidth={1.8} title="Key color" />,
+      node: (
+        <span role="img" aria-label="Key color">
+          <Key size={12} strokeWidth={1.8} />
+        </span>
+      ),
     })
   }
 
   if (swatch.isLock) {
     icons.push({
       key: 'lock',
-      node: <Lock size={12} strokeWidth={1.8} title="Locked endpoint" />,
+      node: (
+        <span role="img" aria-label="Locked endpoint">
+          <Lock size={12} strokeWidth={1.8} />
+        </span>
+      ),
     })
   }
 
@@ -131,7 +154,9 @@ const getSwatchIcons = (swatch: Swatch) => {
     icons.push({
       key: 'gamut',
       node: (
-        <AlertTriangle size={12} strokeWidth={1.8} title="Out of sRGB gamut" />
+        <span role="img" aria-label="Out of sRGB gamut">
+          <AlertTriangle size={12} strokeWidth={1.8} />
+        </span>
       ),
     })
   }
@@ -231,17 +256,39 @@ const KeyRow = memo(
           <Input
             value={value}
             onChange={(event) => onChange(scaleId, index, event.target.value)}
-            className={valid ? undefined : 'border-destructive'}
+            className={cn({ 'border-destructive': !valid })}
             placeholder="#ffffff or oklch(...)"
           />
-          <Button
-            variant="ghost"
-            size="icon-xs"
-            aria-label="Remove key"
-            onClick={() => onRemove(scaleId, index)}
-          >
-            <Trash2 className="size-3" />
-          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger
+              render={
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
+                  aria-label="Remove key"
+                />
+              }
+            >
+              <Trash2 className="size-3" />
+            </AlertDialogTrigger>
+            <AlertDialogContent size="sm">
+              <AlertDialogHeader>
+                <AlertDialogTitle>Remove this key?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will delete the key color from the scale.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  variant="destructive"
+                  onClick={() => onRemove(scaleId, index)}
+                >
+                  Remove key
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
     )
@@ -309,14 +356,36 @@ const ScaleEditorCard = memo(({ scaleId }: ScaleEditorCardProps) => {
         >
           <Copy className="size-3" />
         </Button>
-        <Button
-          variant="ghost"
-          size="icon-xs"
-          aria-label="Delete scale"
-          onClick={() => deleteScale(scale.id)}
-        >
-          <Trash2 className="size-3" />
-        </Button>
+        <AlertDialog>
+          <AlertDialogTrigger
+            render={
+              <Button
+                variant="ghost"
+                size="icon-xs"
+                aria-label="Delete scale"
+              />
+            }
+          >
+            <Trash2 className="size-3" />
+          </AlertDialogTrigger>
+          <AlertDialogContent size="sm">
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete this scale?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This removes the scale and its keys from the palette.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                variant="destructive"
+                onClick={() => deleteScale(scale.id)}
+              >
+                Delete scale
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   )
@@ -358,28 +427,31 @@ const ScalePreviewCard = memo(
           <Badge variant="outline">{scaleModel.swatches.length} swatches</Badge>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-[repeat(auto-fit,minmax(64px,1fr))] gap-3">
+          <div className="grid grid-cols-swatch gap-3">
             {scaleModel.swatches.map((swatch, idx) => {
               const weightLabel = optimizationWeights.get(Number(swatch.weight))
               const isDisabled = !weightLabel
               return (
                 <div
                   key={`${scaleModel.id}-${idx}`}
-                  className="flex flex-col items-center gap-2 text-[11px] font-medium"
+                  className="flex flex-col items-center gap-2 text-xs font-medium tabular-nums"
                 >
                   <span className="text-muted-foreground">
                     {weightLabel ?? '—'}
                   </span>
                   <div
-                    className="flex h-16 w-full flex-col justify-between rounded-lg border px-2 py-1 text-[10px] shadow-sm"
+                    className={cn(
+                      'flex h-16 w-full flex-col justify-between rounded-lg border px-2 py-1 text-2xs shadow-sm',
+                      isDisabled &&
+                        'border-dashed bg-muted/60 text-muted-foreground opacity-80',
+                    )}
                     style={{
                       background: isDisabled
-                        ? 'repeating-linear-gradient(-45deg, #f1f1f1, #f1f1f1 9px, #e3e3e3 9px, #e3e3e3 18px)'
+                        ? undefined
                         : swatch.value.destination,
                       color: isDisabled
-                        ? '#6b7280'
+                        ? undefined
                         : swatchTextColor(swatch, contrast),
-                      opacity: isDisabled ? 0.6 : 1,
                     }}
                   >
                     <div className="flex items-center justify-between">
@@ -408,7 +480,6 @@ ScalePreviewCard.displayName = 'ScalePreviewCard'
 export default function CreatePage() {
   const params = useParams<{ id: string }>()
   const paletteId = Number(params?.id ?? seedPalette.id)
-  const setPalette = usePaletteEditorStore((state) => state.setPalette)
   const paletteName = usePaletteEditorStore((state) => state.paletteName)
   const setPaletteName = usePaletteEditorStore((state) => state.setPaletteName)
   const scaleOrder = usePaletteEditorStore((state) => state.scaleOrder)
@@ -447,13 +518,6 @@ export default function CreatePage() {
     ),
   )
 
-  useEffect(() => {
-    const stored = loadPalettes()
-    const match = stored.find((palette) => palette.id === paletteId)
-    const next = match ?? seedPalette
-    setPalette(next)
-  }, [paletteId, setPalette])
-
   const handleSavePalette = () => {
     if (hasInvalidKeys) return
     const state = usePaletteEditorStore.getState()
@@ -485,7 +549,7 @@ export default function CreatePage() {
   }
 
   return (
-    <div className="min-h-screen bg-muted/40">
+    <div className="min-h-dvh bg-muted/40">
       <div className="mx-auto grid w-full max-w-[1400px] gap-6 p-6 lg:grid-cols-[320px_1fr]">
         <aside className="space-y-6">
           <Card>
@@ -522,7 +586,14 @@ export default function CreatePage() {
               ) : null}
               <div className="space-y-2">
                 <p className="text-sm font-medium">Optimization</p>
-                <Select value={optimization} onValueChange={setOptimization}>
+                <Select
+                  value={optimization}
+                  onValueChange={(value) =>
+                    setOptimization(
+                      value ?? optimizations[0]?.name ?? 'Universal',
+                    )
+                  }
+                >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select optimization" />
                   </SelectTrigger>
@@ -537,7 +608,12 @@ export default function CreatePage() {
               </div>
               <div className="space-y-2">
                 <p className="text-sm font-medium">Contrast</p>
-                <Select value={contrast} onValueChange={setContrast}>
+                <Select
+                  value={contrast}
+                  onValueChange={(value) =>
+                    setContrast(value ?? contrastOptions[0])
+                  }
+                >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select contrast" />
                   </SelectTrigger>

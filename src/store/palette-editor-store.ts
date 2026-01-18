@@ -1,5 +1,9 @@
 import { create } from 'zustand'
-import type { PaletteRecord } from '@/src/lib/palettes'
+import {
+  loadPalettes,
+  seedPalette,
+  type PaletteRecord,
+} from '@/src/lib/palettes'
 
 export type ScaleState = {
   id: number
@@ -40,11 +44,26 @@ const buildScaleState = (palette: PaletteRecord) => {
   return { scales, scaleOrder }
 }
 
+const getInitialPaletteId = () => {
+  if (typeof window === 'undefined') return seedPalette.id
+  const match = window.location.pathname.match(/\/palettes\/(\d+)\/edit/)
+  return match ? Number(match[1]) : seedPalette.id
+}
+
+const getInitialPalette = () => {
+  const paletteId = getInitialPaletteId()
+  const stored = loadPalettes()
+  return stored.find((palette) => palette.id === paletteId) ?? seedPalette
+}
+
+const initialPalette = getInitialPalette()
+const initialScaleState = buildScaleState(initialPalette)
+
 export const usePaletteEditorStore = create<PaletteEditorState>((set) => ({
-  paletteId: 1,
-  paletteName: 'Prism',
-  scaleOrder: [],
-  scales: {},
+  paletteId: initialPalette.id,
+  paletteName: initialPalette.name,
+  scaleOrder: initialScaleState.scaleOrder,
+  scales: initialScaleState.scales,
   setPalette: (palette) => {
     const { scales, scaleOrder } = buildScaleState(palette)
     set({
