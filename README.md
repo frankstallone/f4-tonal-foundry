@@ -1,7 +1,9 @@
 # Prism Color
 
 Prism Color is a palette lab for building multi-scale color systems, comparing
-contrast metrics, and previewing optimized swatches in real time.
+contrast metrics, and previewing optimized swatches in real time. It is a
+modern take on Kevin Muldoon's original Prism Color work, inspired by
+[prismcolor.io](https://github.com/caoimghgin/prismcolor.io).
 
 ## Highlights
 
