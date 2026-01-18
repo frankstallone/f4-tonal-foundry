@@ -1,6 +1,8 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import Color from 'colorjs.io'
+import { AlertTriangle, Anchor, Key, Lock } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import {
   Card,
@@ -76,6 +78,44 @@ const swatchTextColor = (swatch: Swatch, contrast: string) => {
   const white = Math.abs(swatch.apca_white)
   const black = Math.abs(swatch.apca_black)
   return white > black ? '#ffffff' : '#111111'
+}
+
+const getSwatchIcons = (swatch: Swatch) => {
+  const color = new Color(swatch.value.origin)
+  const isOutOfGamut = !color.inGamut('srgb')
+  const icons: Array<{ key: string; node: JSX.Element }> = []
+
+  if (swatch.isAnchor) {
+    icons.push({
+      key: 'anchor',
+      node: <Anchor size={12} strokeWidth={1.8} title="Anchor color" />,
+    })
+  }
+
+  if (swatch.isKey) {
+    icons.push({
+      key: 'key',
+      node: <Key size={12} strokeWidth={1.8} title="Key color" />,
+    })
+  }
+
+  if (swatch.isLock) {
+    icons.push({
+      key: 'lock',
+      node: <Lock size={12} strokeWidth={1.8} title="Locked endpoint" />,
+    })
+  }
+
+  if (isOutOfGamut) {
+    icons.push({
+      key: 'gamut',
+      node: (
+        <AlertTriangle size={12} strokeWidth={1.8} title="Out of sRGB gamut" />
+      ),
+    })
+  }
+
+  return icons
 }
 
 export default function CreatePage() {
@@ -208,15 +248,11 @@ export default function CreatePage() {
                           }}
                         >
                           <div className="flex items-center justify-between">
-                            <span>
-                              {swatch.isAnchor
-                                ? 'A'
-                                : swatch.isKey
-                                  ? 'K'
-                                  : swatch.isLock
-                                    ? 'L'
-                                    : ''}
-                            </span>
+                            <div className="flex items-center gap-1">
+                              {getSwatchIcons(swatch).map((item) => (
+                                <span key={item.key}>{item.node}</span>
+                              ))}
+                            </div>
                             <span>{swatch.weight}</span>
                           </div>
                           <div className="flex items-center justify-between">
