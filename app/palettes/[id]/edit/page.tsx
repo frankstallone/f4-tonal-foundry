@@ -8,7 +8,7 @@ import {
   useState,
   type ReactElement,
 } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import Color from 'colorjs.io'
 import {
   AlertTriangle,
@@ -59,6 +59,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { PageHeader } from '@/components/page-header'
 import { buildScale, colorToHex, optimizations } from '@/src/engine'
 import type { PaletteSeed, Swatch } from '@/src/engine'
 import {
@@ -483,6 +484,7 @@ const ScalePreviewCard = memo(
 ScalePreviewCard.displayName = 'ScalePreviewCard'
 
 export default function CreatePage() {
+  const router = useRouter()
   const params = useParams<{ id: string }>()
   const paletteId = Number(params?.id ?? seedPalette.id)
   const paletteName = usePaletteEditorStore((state) => state.paletteName)
@@ -553,120 +555,141 @@ export default function CreatePage() {
     setLastSavedAt({ paletteId, timestamp: Date.now() })
   }
 
+  const handleCancel = () => {
+    router.push('/dashboard')
+  }
+
   return (
     <div className="min-h-dvh bg-muted/40">
-      <div className="mx-auto grid w-full max-w-[1400px] gap-6 p-6 lg:grid-cols-[320px_1fr]">
-        <aside className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Edit palette</CardTitle>
-              <CardDescription>
-                Name this palette and shape the scale output.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <p className="text-sm font-medium">Palette name</p>
-                <Input
-                  value={paletteName}
-                  onChange={(event) => setPaletteName(event.target.value)}
-                  placeholder="Palette name"
-                />
-              </div>
+      <div className="mx-auto w-full max-w-[1400px] space-y-6 p-6">
+        <PageHeader
+          breadcrumbs={[
+            { label: 'Dashboard', href: '/dashboard' },
+            { label: paletteName.trim() || `Palette ${paletteId}` },
+          ]}
+          title="Edit palette"
+          actions={
+            <>
+              <Button variant="outline" size="sm" onClick={handleCancel}>
+                Cancel
+              </Button>
               <Button
                 size="sm"
-                className="w-full"
                 onClick={handleSavePalette}
                 disabled={hasInvalidKeys}
               >
                 Save palette
               </Button>
-              {lastSavedAt?.paletteId === paletteId ? (
-                <p className="text-xs text-muted-foreground">Saved just now.</p>
-              ) : null}
-              {hasInvalidKeys ? (
-                <p className="text-xs text-destructive">
-                  Fix invalid keys before saving.
-                </p>
-              ) : null}
-              <div className="space-y-2">
-                <p className="text-sm font-medium">Optimization</p>
-                <Select
-                  value={optimization}
-                  onValueChange={(value) =>
-                    setOptimization(
-                      value ?? optimizations[0]?.name ?? 'Universal',
-                    )
-                  }
+            </>
+          }
+        />
+        <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
+          <aside className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Edit palette</CardTitle>
+                <CardDescription>
+                  Name this palette and shape the scale output.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">Palette name</p>
+                  <Input
+                    value={paletteName}
+                    onChange={(event) => setPaletteName(event.target.value)}
+                    placeholder="Palette name"
+                  />
+                </div>
+                {lastSavedAt?.paletteId === paletteId ? (
+                  <p className="text-xs text-muted-foreground">
+                    Saved just now.
+                  </p>
+                ) : null}
+                {hasInvalidKeys ? (
+                  <p className="text-xs text-destructive">
+                    Fix invalid keys before saving.
+                  </p>
+                ) : null}
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">Optimization</p>
+                  <Select
+                    value={optimization}
+                    onValueChange={(value) =>
+                      setOptimization(
+                        value ?? optimizations[0]?.name ?? 'Universal',
+                      )
+                    }
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select optimization" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {optimizations.map((item) => (
+                        <SelectItem key={item.name} value={item.name}>
+                          {item.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">Contrast</p>
+                  <Select
+                    value={contrast}
+                    onValueChange={(value) =>
+                      setContrast(value ?? contrastOptions[0])
+                    }
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select contrast" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {contrastOptions.map((item) => (
+                        <SelectItem key={item} value={item}>
+                          {item}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Scales</CardTitle>
+                <CardDescription>
+                  Update naming and manage scale groupings.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {scaleOrder.map((scaleId) => (
+                  <ScaleEditorCard key={scaleId} scaleId={scaleId} />
+                ))}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  onClick={addScale}
                 >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select optimization" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {optimizations.map((item) => (
-                      <SelectItem key={item.name} value={item.name}>
-                        {item.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <p className="text-sm font-medium">Contrast</p>
-                <Select
-                  value={contrast}
-                  onValueChange={(value) =>
-                    setContrast(value ?? contrastOptions[0])
-                  }
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select contrast" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {contrastOptions.map((item) => (
-                      <SelectItem key={item} value={item}>
-                        {item}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Scales</CardTitle>
-              <CardDescription>
-                Update naming and manage scale groupings.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {scaleOrder.map((scaleId) => (
-                <ScaleEditorCard key={scaleId} scaleId={scaleId} />
-              ))}
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full"
-                onClick={addScale}
-              >
-                <Plus className="size-4" />
-                Add scale
-              </Button>
-            </CardContent>
-          </Card>
-        </aside>
+                  <Plus className="size-4" />
+                  Add scale
+                </Button>
+              </CardContent>
+            </Card>
+          </aside>
 
-        <main className="space-y-6">
-          {scaleOrder.map((scaleId) => (
-            <ScalePreviewCard
-              key={scaleId}
-              scaleId={scaleId}
-              contrast={contrast}
-              optimizationWeights={optimizationWeights}
-            />
-          ))}
-        </main>
+          <main className="space-y-6">
+            {scaleOrder.map((scaleId) => (
+              <ScalePreviewCard
+                key={scaleId}
+                scaleId={scaleId}
+                contrast={contrast}
+                optimizationWeights={optimizationWeights}
+              />
+            ))}
+          </main>
+        </div>
       </div>
     </div>
   )
