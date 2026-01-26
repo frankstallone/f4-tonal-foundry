@@ -1,8 +1,16 @@
 'use client'
 
-import { useId, useMemo, useState, type ReactElement } from 'react'
-import { useRouter } from 'next/navigation'
+import {
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  type ReactElement,
+} from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { AlertTriangle, Anchor, Key, Lock } from 'lucide-react'
+import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -12,6 +20,14 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { Label } from '@/components/ui/label'
 import {
   Select,
@@ -29,6 +45,7 @@ import {
   seedPalette,
 } from '@/src/lib/palettes'
 import { usePaletteEditorStore } from '@/src/store/palette-editor-store'
+import { decodeSharePayload, encodeSharePayload } from '@/src/lib/share'
 import { cn } from '@/lib/utils'
 
 const contrastOptions = [
@@ -127,20 +144,19 @@ const getSwatchIcons = (swatch: Swatch) => {
 
 export default function DashboardPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [optimization, setOptimization] = useState(
     optimizations[0]?.name ?? 'Universal',
   )
   const [contrast, setContrast] = useState(contrastOptions[0])
   const optimizationLabelId = useId()
   const contrastLabelId = useId()
+  const shareHandledRef = useRef(false)
 
-  const [paletteState, setPaletteState] = useState(() => {
-    const stored = loadPalettes()
-    return {
-      palettes: stored,
-      selectedId: stored[0]?.id ?? seedPalette.id,
-    }
-  })
+  const [paletteState, setPaletteState] = useState(() => ({
+    palettes: [seedPalette],
+    selectedId: seedPalette.id,
+  }))
 
   const { palettes, selectedId } = paletteState
   const selectedPalette =
@@ -160,6 +176,71 @@ export default function DashboardPage() {
     })
     return map
   }, [optimization])
+
+  const handleCopyShareLink = async () => {
+    if (!selectedPalette) return
+    const payload = {
+      name: selectedPalette.name,
+      seed: selectedPalette.seed,
+    }
+    const shareUrl = `${window.location.origin}/dashboard?share=${encodeSharePayload(payload)}`
+    try {
+      await navigator.clipboard.writeText(shareUrl)
+      toast.success('Share link copied.')
+    } catch {
+      window.prompt('Copy this share link:', shareUrl)
+    }
+  }
+
+  const handleCopyJson = async () => {
+    if (!selectedPalette) return
+    const json = JSON.stringify(
+      { name: selectedPalette.name, seed: selectedPalette.seed },
+      null,
+      2,
+    )
+    try {
+      await navigator.clipboard.writeText(json)
+      toast.success('Palette JSON copied.')
+    } catch {
+      window.prompt('Copy this palette JSON:', json)
+    }
+  }
+
+  useEffect(() => {
+    if (shareHandledRef.current) return
+    const shareValue = searchParams.get('share')
+    if (!shareValue) return
+    const payload = decodeSharePayload(shareValue)
+    if (!payload) return
+    shareHandledRef.current = true
+    const nextPalette = createPaletteRecord(loadPalettes())
+    const draftPalette = {
+      ...nextPalette,
+      name: payload.name?.trim() || `Shared Palette ${nextPalette.id}`,
+      seed: payload.seed,
+    }
+    usePaletteEditorStore.getState().setPalette(draftPalette)
+    router.push(`/palettes/${draftPalette.id}/edit`)
+  }, [router, searchParams])
+
+  useEffect(() => {
+    const stored = loadPalettes()
+    const selectedParam = searchParams.get('selected')
+    const selectedId = selectedParam ? Number(selectedParam) : null
+    setPaletteState((prev) => {
+      const resolvedSelectedId =
+        (selectedId &&
+          stored.find((palette) => palette.id === selectedId)?.id) ??
+        stored.find((palette) => palette.id === prev.selectedId)?.id ??
+        stored[0]?.id ??
+        seedPalette.id
+      return {
+        palettes: stored,
+        selectedId: resolvedSelectedId,
+      }
+    })
+  }, [searchParams])
 
   const handleCreatePalette = () => {
     const nextPalette = createPaletteRecord(paletteState.palettes)
@@ -183,6 +264,24 @@ export default function DashboardPage() {
               <Button variant="outline" size="sm" onClick={handleEditPalette}>
                 Edit palette
               </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  render={<Button variant="outline" size="sm" />}
+                >
+                  Share
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuGroup>
+                    <DropdownMenuLabel>Share</DropdownMenuLabel>
+                    <DropdownMenuItem onClick={handleCopyShareLink}>
+                      Copy share link
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleCopyJson}>
+                      Copy JSON
+                    </DropdownMenuItem>
+                  </DropdownMenuGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <Button size="sm" onClick={handleCreatePalette}>
                 Create palette
               </Button>

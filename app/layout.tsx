@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Geist, Geist_Mono, Roboto } from 'next/font/google'
 
 import { cn } from '@/lib/utils'
+import { Toaster } from '@/components/ui/sonner'
 
 import './globals.css'
 
@@ -43,6 +44,7 @@ export default function RootLayout({
           Skip to content
         </a>
         <main id="main">{children}</main>
+        <Toaster />
       </body>
     </html>
   )
