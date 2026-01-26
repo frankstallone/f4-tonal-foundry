@@ -26,9 +26,9 @@ import type { Swatch } from '@/src/engine'
 import {
   createPaletteRecord,
   loadPalettes,
-  savePalettes,
   seedPalette,
 } from '@/src/lib/palettes'
+import { usePaletteEditorStore } from '@/src/store/palette-editor-store'
 import { cn } from '@/lib/utils'
 
 const contrastOptions = [
@@ -162,16 +162,9 @@ export default function DashboardPage() {
   }, [optimization])
 
   const handleCreatePalette = () => {
-    setPaletteState((prev) => {
-      const nextPalette = createPaletteRecord(prev.palettes)
-      const next = [...prev.palettes, nextPalette]
-      savePalettes(next)
-      router.push(`/palettes/${nextPalette.id}/edit`)
-      return {
-        palettes: next,
-        selectedId: nextPalette.id,
-      }
-    })
+    const nextPalette = createPaletteRecord(paletteState.palettes)
+    usePaletteEditorStore.getState().setPalette(nextPalette)
+    router.push(`/palettes/${nextPalette.id}/edit`)
   }
 
   const handleEditPalette = () => {

@@ -68,6 +68,14 @@ export const upsertPalette = (
   return next
 }
 
+export const deletePalette = (id: number, palettes?: PaletteRecord[]) => {
+  const next = (palettes ? [...palettes] : loadPalettes()).filter(
+    (palette) => palette.id !== id,
+  )
+  savePalettes(next.length ? next : getDefaultPalettes())
+  return next
+}
+
 export const createPaletteRecord = (
   palettes: PaletteRecord[],
 ): PaletteRecord => {

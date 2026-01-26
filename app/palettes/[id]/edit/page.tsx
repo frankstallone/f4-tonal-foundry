@@ -4,6 +4,7 @@ import {
   memo,
   useCallback,
   useDeferredValue,
+  useEffect,
   useMemo,
   useState,
   useId,
@@ -65,7 +66,9 @@ import { PageHeader } from '@/components/page-header'
 import { buildScale, colorToHex, optimizations } from '@/src/engine'
 import type { PaletteSeed, Swatch } from '@/src/engine'
 import {
+  deletePalette,
   seedPalette,
+  loadPalettes,
   upsertPalette,
   type PaletteRecord,
 } from '@/src/lib/palettes'
@@ -496,6 +499,8 @@ export default function CreatePage() {
   const paletteId = Number(params?.id ?? seedPalette.id)
   const paletteName = usePaletteEditorStore((state) => state.paletteName)
   const setPaletteName = usePaletteEditorStore((state) => state.setPaletteName)
+  const setPalette = usePaletteEditorStore((state) => state.setPalette)
+  const currentPaletteId = usePaletteEditorStore((state) => state.paletteId)
   const scaleOrder = usePaletteEditorStore((state) => state.scaleOrder)
   const addScale = usePaletteEditorStore((state) => state.addScale)
   const paletteNameId = useId()
@@ -569,6 +574,24 @@ export default function CreatePage() {
     router.push('/dashboard')
   }
 
+  const handleDeletePalette = () => {
+    deletePalette(paletteId)
+    router.push('/dashboard')
+  }
+
+  useEffect(() => {
+    const stored = loadPalettes()
+    const storedPalette = stored.find((palette) => palette.id === paletteId)
+    if (storedPalette) {
+      setPalette(storedPalette)
+      return
+    }
+    if (currentPaletteId === paletteId) {
+      return
+    }
+    setPalette(seedPalette)
+  }, [currentPaletteId, paletteId, setPalette])
+
   return (
     <div className="min-h-dvh bg-muted/40">
       <div className="mx-auto w-full max-w-[1400px] space-y-6 p-6">
@@ -583,6 +606,30 @@ export default function CreatePage() {
               <Button variant="outline" size="sm" onClick={handleCancel}>
                 Cancel
               </Button>
+              <AlertDialog>
+                <AlertDialogTrigger
+                  render={<Button variant="destructive" size="sm" />}
+                >
+                  Delete
+                </AlertDialogTrigger>
+                <AlertDialogContent size="sm">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete this palette?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      variant="destructive"
+                      onClick={handleDeletePalette}
+                    >
+                      Delete palette
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
               <Button
                 size="sm"
                 onClick={handleSavePalette}
