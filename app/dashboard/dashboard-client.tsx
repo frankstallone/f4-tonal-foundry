@@ -442,6 +442,7 @@ export default function DashboardClient() {
                 <TabsContent
                   key={paletteItem.id}
                   value={String(paletteItem.id)}
+                  className="space-y-6"
                 >
                   {buildPalette(paletteItem.seed).values.map((scale) => (
                     <Card key={scale.id}>
