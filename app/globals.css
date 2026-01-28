@@ -96,15 +96,15 @@
   --prism-system-500: oklch(57.202% 0.17519 258.04);
   --background: var(--prism-neutral-075);
   --foreground: var(--prism-neutral-950);
-  --card: var(--prism-neutral-025);
+  --card: var(--prism-neutral-050);
   --card-foreground: var(--prism-neutral-950);
-  --popover: var(--prism-neutral-000);
+  --popover: var(--prism-neutral-025);
   --popover-foreground: var(--prism-neutral-950);
   --primary: var(--prism-primary-550);
   --primary-foreground: var(--prism-neutral-000);
   --secondary: var(--prism-secondary-050);
   --secondary-foreground: var(--prism-secondary-900);
-  --muted: var(--prism-neutral-000);
+  --muted: var(--prism-neutral-050);
   --muted-foreground: var(--prism-neutral-650);
   --accent: var(--prism-primary-050);
   --accent-foreground: var(--prism-primary-900);
@@ -118,12 +118,12 @@
   --chart-4: var(--prism-highlight-500);
   --chart-5: var(--prism-negative-550);
   --radius: 0.625rem;
-  --sidebar: var(--prism-neutral-050);
+  --sidebar: var(--prism-neutral-075);
   --sidebar-foreground: var(--prism-neutral-950);
   --sidebar-primary: var(--prism-primary-550);
   --sidebar-primary-foreground: var(--prism-neutral-000);
-  --sidebar-accent: var(--prism-secondary-100);
-  --sidebar-accent-foreground: var(--prism-secondary-900);
+  --sidebar-accent: var(--prism-neutral-200);
+  --sidebar-accent-foreground: var(--prism-neutral-950);
   --sidebar-border: var(--prism-neutral-150);
   --sidebar-ring: var(--prism-primary-350);
 }

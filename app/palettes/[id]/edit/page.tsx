@@ -23,8 +23,8 @@ import {
   Trash2,
 } from 'lucide-react'
 import { toast } from 'sonner'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import { AppShell } from '@/components/app-shell'
+import { ThemeToggle } from '@/components/theme-toggle'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -36,13 +36,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -53,6 +48,14 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+} from '@/components/ui/sidebar'
 import {
   ColorArea,
   ColorPicker,
@@ -72,7 +75,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { PageHeader } from '@/components/page-header'
 import { TonalGuide } from '@/components/tonal-guide'
 import {
   buildPalette,
@@ -250,7 +252,7 @@ const KeyRow = memo(
     const pickerColor = useMemo(() => toPickerColor(value), [value])
 
     return (
-      <div className="space-y-2 rounded-md border border-muted/50 bg-muted/30 p-2">
+      <div className="space-y-2 border border-border bg-muted p-2">
         <div className="flex items-center gap-2">
           <div className="relative flex-1">
             <DialogTrigger>
@@ -300,7 +302,9 @@ const KeyRow = memo(
             <Input
               value={value}
               onChange={(event) => onChange(scaleId, index, event.target.value)}
-              className={cn('pl-8', { 'border-destructive': !valid })}
+              className={cn('pl-8 rounded-none', {
+                'border-destructive': !valid,
+              })}
               aria-label={`Key color ${index + 1}`}
               placeholder="#ffffff or oklch(...)"
             />
@@ -312,6 +316,7 @@ const KeyRow = memo(
                   variant="ghost"
                   size="icon-xs"
                   aria-label="Remove key"
+                  className="rounded-none"
                 />
               }
             >
@@ -360,7 +365,7 @@ const ScaleEditorCard = memo(({ scaleId }: ScaleEditorCardProps) => {
   if (!scale) return null
 
   return (
-    <div className="space-y-2 rounded-lg border p-3">
+    <div className="space-y-3 border border-border bg-muted px-3 py-3">
       <div className="flex items-center gap-2">
         <Label htmlFor={`scale-name-${scale.id}`} className="sr-only">
           Scale name
@@ -370,8 +375,11 @@ const ScaleEditorCard = memo(({ scaleId }: ScaleEditorCardProps) => {
           value={scale.name}
           onChange={(event) => updateScaleName(scale.id, event.target.value)}
           placeholder="Scale name"
+          className="rounded-none"
         />
-        <Badge variant="secondary">{scale.keys.length} keys</Badge>
+        <Badge variant="outline" className="rounded-none">
+          {scale.keys.length} keys
+        </Badge>
       </div>
       <div className="flex flex-col gap-2">
         <p className="text-xs font-medium text-muted-foreground">Keys</p>
@@ -390,7 +398,7 @@ const ScaleEditorCard = memo(({ scaleId }: ScaleEditorCardProps) => {
         <Button
           variant="ghost"
           size="xs"
-          className="w-full justify-start"
+          className="w-full justify-start rounded-none"
           onClick={() => addKey(scale.id)}
         >
           <Plus className="size-4" />
@@ -403,6 +411,7 @@ const ScaleEditorCard = memo(({ scaleId }: ScaleEditorCardProps) => {
           size="icon-xs"
           aria-label="Duplicate scale"
           onClick={() => duplicateScale(scale.id)}
+          className="rounded-none"
         >
           <Copy className="size-3" />
         </Button>
@@ -413,6 +422,7 @@ const ScaleEditorCard = memo(({ scaleId }: ScaleEditorCardProps) => {
                 variant="ghost"
                 size="icon-xs"
                 aria-label="Delete scale"
+                className="rounded-none"
               />
             }
           >
@@ -477,62 +487,64 @@ const ScalePreviewCard = memo(
     if (!scaleModel) return null
 
     return (
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0">
-          <div>
-            <CardTitle className="capitalize">{scaleModel.semantic}</CardTitle>
-            <CardDescription>
+      <section className="bg-card px-6 py-5">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="space-y-1">
+            <p className="text-xs text-muted-foreground">
               {scaleModel.destinationSpace.toUpperCase()} output
-            </CardDescription>
+            </p>
+            <h3 className="text-balance text-sm font-semibold capitalize">
+              {scaleModel.semantic}
+            </h3>
           </div>
-          <Badge variant="outline">{scaleModel.swatches.length} swatches</Badge>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-swatch gap-3">
-            {scaleModel.swatches.map((swatch, idx) => {
-              const weightLabel = optimizationWeights.get(Number(swatch.weight))
-              const isDisabled = !weightLabel
-              return (
+          <p className="text-xs text-muted-foreground tabular-nums">
+            {scaleModel.swatches.length} swatches
+          </p>
+        </div>
+        <div className="mt-4 grid grid-cols-swatch gap-2">
+          {scaleModel.swatches.map((swatch, idx) => {
+            const weightLabel = optimizationWeights.get(Number(swatch.weight))
+            const isDisabled = !weightLabel
+            return (
+              <div
+                key={`${scaleModel.id}-${idx}`}
+                className="flex flex-col items-center gap-2 text-xs font-medium tabular-nums"
+              >
+                <span className="text-muted-foreground">
+                  {weightLabel ?? '—'}
+                </span>
                 <div
-                  key={`${scaleModel.id}-${idx}`}
-                  className="flex flex-col items-center gap-2 text-xs font-medium tabular-nums"
+                  className={cn(
+                    'flex h-16 w-full flex-col justify-between border px-2 py-1 text-2xs',
+                    isDisabled &&
+                      'border-dashed bg-muted text-muted-foreground opacity-80',
+                  )}
+                  style={{
+                    background: isDisabled
+                      ? undefined
+                      : swatch.value.destination,
+                    color: isDisabled
+                      ? undefined
+                      : swatchTextColor(swatch, contrast),
+                  }}
                 >
-                  <span className="text-muted-foreground">
-                    {weightLabel ?? '—'}
-                  </span>
-                  <div
-                    className={cn(
-                      'flex h-16 w-full flex-col justify-between rounded-lg border px-2 py-1 text-2xs shadow-sm',
-                      isDisabled &&
-                        'border-dashed bg-muted/60 text-muted-foreground opacity-80',
-                    )}
-                    style={{
-                      background: isDisabled
-                        ? undefined
-                        : swatch.value.destination,
-                      color: isDisabled
-                        ? undefined
-                        : swatchTextColor(swatch, contrast),
-                    }}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1">
-                        {getSwatchIcons(swatch).map((item) => (
-                          <span key={item.key}>{item.node}</span>
-                        ))}
-                      </div>
-                      <span>{swatch.weight}</span>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1">
+                      {getSwatchIcons(swatch).map((item) => (
+                        <span key={item.key}>{item.node}</span>
+                      ))}
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span>{getContrastLabel(swatch, contrast)}</span>
-                    </div>
+                    <span>{swatch.weight}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span>{getContrastLabel(swatch, contrast)}</span>
                   </div>
                 </div>
-              )
-            })}
-          </div>
-        </CardContent>
-      </Card>
+              </div>
+            )
+          })}
+        </div>
+      </section>
     )
   },
 )
@@ -722,87 +734,103 @@ export default function CreatePage() {
   }, [currentPaletteId, paletteId, setPalette])
 
   return (
-    <div className="min-h-dvh bg-background">
-      <div className="mx-auto w-full max-w-[1400px] space-y-6 p-6">
-        <PageHeader
-          breadcrumbs={[
-            { label: 'Dashboard', href: '/dashboard' },
-            { label: paletteName.trim() || `Palette ${paletteId}` },
-          ]}
-          title="Edit palette"
-          actions={
-            <>
-              <Button variant="outline" size="sm" onClick={handleCancel}>
-                Cancel
-              </Button>
-              <DropdownMenu>
-                <DropdownMenuTrigger
-                  render={<Button variant="outline" size="sm" />}
+    <AppShell
+      breadcrumbs={[
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: paletteName.trim() || `Palette ${paletteId}` },
+      ]}
+      title="Edit palette"
+      actions={
+        <>
+          <ThemeToggle />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleCancel}
+            className="rounded-none"
+          >
+            Cancel
+          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <Button variant="outline" size="sm" className="rounded-none" />
+              }
+            >
+              Share
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>Share</DropdownMenuLabel>
+                <DropdownMenuItem onClick={handleCopyShareLink}>
+                  Copy share link
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleCopyJson}>
+                  Copy JSON
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleCopyDtcg}>
+                  Copy DTCG tokens
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleCopyTailwind}>
+                  Copy Tailwind theme
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <AlertDialog>
+            <AlertDialogTrigger
+              render={
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  className="rounded-none"
+                />
+              }
+            >
+              Delete
+            </AlertDialogTrigger>
+            <AlertDialogContent size="sm">
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete this palette?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  variant="destructive"
+                  onClick={handleDeletePalette}
                 >
-                  Share
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuGroup>
-                    <DropdownMenuLabel>Share</DropdownMenuLabel>
-                    <DropdownMenuItem onClick={handleCopyShareLink}>
-                      Copy share link
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleCopyJson}>
-                      Copy JSON
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleCopyDtcg}>
-                      Copy DTCG tokens
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleCopyTailwind}>
-                      Copy Tailwind theme
-                    </DropdownMenuItem>
-                  </DropdownMenuGroup>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              <AlertDialog>
-                <AlertDialogTrigger
-                  render={<Button variant="destructive" size="sm" />}
-                >
-                  Delete
-                </AlertDialogTrigger>
-                <AlertDialogContent size="sm">
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Delete this palette?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This action cannot be undone.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      variant="destructive"
-                      onClick={handleDeletePalette}
-                    >
-                      Delete palette
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-              <Button
-                size="sm"
-                onClick={handleSavePalette}
-                disabled={hasInvalidKeys}
-              >
-                Save palette
-              </Button>
-            </>
-          }
-        />
-        <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
-          <aside className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Edit palette</CardTitle>
-                <CardDescription>
-                  Name this palette and choose the output space.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
+                  Delete palette
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+          <Button
+            size="sm"
+            onClick={handleSavePalette}
+            disabled={hasInvalidKeys}
+            className="rounded-none"
+          >
+            Save palette
+          </Button>
+        </>
+      }
+      sidebar={
+        <Sidebar>
+          <SidebarHeader>
+            <div className="space-y-1">
+              <p className="text-xs text-muted-foreground">Palette</p>
+              <p className="text-sm font-semibold">
+                {paletteName.trim() || `Palette ${paletteId}`}
+              </p>
+            </div>
+          </SidebarHeader>
+          <SidebarContent>
+            <SidebarGroup>
+              <SidebarGroupLabel>Palette options</SidebarGroupLabel>
+              <SidebarGroupContent>
                 <div className="space-y-2">
                   <Label htmlFor={paletteNameId}>Palette name</Label>
                   <Input
@@ -810,6 +838,7 @@ export default function CreatePage() {
                     value={paletteName}
                     onChange={(event) => setPaletteName(event.target.value)}
                     placeholder="Palette name"
+                    className="rounded-none"
                   />
                 </div>
                 {lastSavedAt?.paletteId === paletteId ? (
@@ -831,7 +860,8 @@ export default function CreatePage() {
                     }
                   >
                     <SelectTrigger
-                      className="w-full"
+                      size="sm"
+                      className="w-full rounded-none"
                       aria-labelledby={outputSpaceLabelId}
                     >
                       <SelectValue>
@@ -853,16 +883,11 @@ export default function CreatePage() {
                     </SelectContent>
                   </Select>
                 </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>View options</CardTitle>
-                <CardDescription>
-                  Adjust how the scale is labeled and measured.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
+              </SidebarGroupContent>
+            </SidebarGroup>
+            <SidebarGroup>
+              <SidebarGroupLabel>View options</SidebarGroupLabel>
+              <SidebarGroupContent>
                 <div className="space-y-2">
                   <Label id={optimizationLabelId}>Optimization</Label>
                   <Select
@@ -874,7 +899,8 @@ export default function CreatePage() {
                     }
                   >
                     <SelectTrigger
-                      className="w-full"
+                      size="sm"
+                      className="w-full rounded-none"
                       aria-labelledby={optimizationLabelId}
                     >
                       <SelectValue placeholder="Select optimization" />
@@ -897,7 +923,8 @@ export default function CreatePage() {
                     }
                   >
                     <SelectTrigger
-                      className="w-full"
+                      size="sm"
+                      className="w-full rounded-none"
                       aria-labelledby={contrastLabelId}
                     >
                       <SelectValue placeholder="Select contrast" />
@@ -911,63 +938,65 @@ export default function CreatePage() {
                     </SelectContent>
                   </Select>
                 </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>Scales</CardTitle>
-                <CardDescription>
-                  Update naming and manage scale groupings.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
+              </SidebarGroupContent>
+            </SidebarGroup>
+            <SidebarGroup>
+              <SidebarGroupLabel>Scales</SidebarGroupLabel>
+              <SidebarGroupContent className="space-y-3">
                 {scaleOrder.map((scaleId) => (
                   <ScaleEditorCard key={scaleId} scaleId={scaleId} />
                 ))}
                 <Button
                   variant="outline"
                   size="sm"
-                  className="w-full"
+                  className="w-full rounded-none"
                   onClick={addScale}
                 >
                   <Plus className="size-4" />
                   Add scale
                 </Button>
-              </CardContent>
-            </Card>
-          </aside>
-
-          <main className="space-y-6">
-            <Card className="bg-card">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle>Tonal categories</CardTitle>
-                <a
-                  href="https://medium.com/user-experience-design-1/the-universal-color-palette-9826deb94f7"
-                  target="_blank"
-                  rel="noreferrer"
-                  title="Open Kevin Muldoon’s Universal Color Palette article"
-                  aria-label="Open Kevin Muldoon’s Universal Color Palette article"
-                  className="text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  <ExternalLink className="size-4" />
-                </a>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <TonalGuide />
-              </CardContent>
-            </Card>
-            {scaleOrder.map((scaleId) => (
-              <ScalePreviewCard
-                key={scaleId}
-                scaleId={scaleId}
-                contrast={contrast}
-                optimizationWeights={optimizationWeights}
-                outputSpace={outputSpace}
-              />
-            ))}
-          </main>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </SidebarContent>
+        </Sidebar>
+      }
+    >
+      <div className="flex h-full flex-col">
+        <section className="border-b border-border bg-card px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <p className="text-xs text-muted-foreground">Reference</p>
+              <h2 className="text-balance text-sm font-semibold">
+                Tonal categories
+              </h2>
+            </div>
+            <a
+              href="https://medium.com/user-experience-design-1/the-universal-color-palette-9826deb94f7"
+              target="_blank"
+              rel="noreferrer"
+              title="Open Kevin Muldoon’s Universal Color Palette article"
+              aria-label="Open Kevin Muldoon’s Universal Color Palette article"
+              className="text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <ExternalLink className="size-4" />
+            </a>
+          </div>
+          <div className="mt-4">
+            <TonalGuide />
+          </div>
+        </section>
+        <div className="divide-y divide-border">
+          {scaleOrder.map((scaleId) => (
+            <ScalePreviewCard
+              key={scaleId}
+              scaleId={scaleId}
+              contrast={contrast}
+              optimizationWeights={optimizationWeights}
+              outputSpace={outputSpace}
+            />
+          ))}
         </div>
       </div>
-    </div>
+    </AppShell>
   )
 }
