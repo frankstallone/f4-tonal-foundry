@@ -24,7 +24,7 @@ type PageHeaderProps = {
 
 export function PageHeader({ breadcrumbs, title, actions }: PageHeaderProps) {
   return (
-    <header className="rounded-lg border bg-background/90 px-6 py-4 shadow-sm">
+    <header className="rounded-lg border bg-card px-6 py-4 shadow-sm">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1">
           {breadcrumbs?.length ? (

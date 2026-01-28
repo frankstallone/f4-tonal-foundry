@@ -3,7 +3,7 @@ import DashboardClient from './dashboard-client'
 
 export default function DashboardPage() {
   return (
-    <Suspense fallback={<div className="min-h-dvh bg-muted/40" />}>
+    <Suspense fallback={<div className="min-h-dvh bg-background" />}>
       <DashboardClient />
     </Suspense>
   )

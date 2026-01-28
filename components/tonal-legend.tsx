@@ -23,7 +23,7 @@ export function TonalLegend({
       className={cn(
         isInline
           ? 'flex flex-wrap items-center gap-2 text-2xs text-muted-foreground'
-          : 'flex flex-wrap items-center gap-2 rounded-lg border bg-background/80 px-3 py-2 text-2xs text-muted-foreground',
+          : 'flex flex-wrap items-center gap-2 rounded-lg border bg-card px-3 py-2 text-2xs text-muted-foreground',
         className,
       )}
     >

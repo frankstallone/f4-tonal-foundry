@@ -9,6 +9,7 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
+    "scales": "tsx scripts/generate-scale.ts",
     "format": "prettier --write .",
     "prepare": "husky install"
   },
@@ -33,6 +34,7 @@
     "zustand": "^5.0.10"
   },
   "devDependencies": {
+    "tsx": "^4.20.6",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

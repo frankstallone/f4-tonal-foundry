@@ -301,7 +301,7 @@ export default function DashboardClient() {
   }
 
   return (
-    <div className="min-h-dvh bg-muted/40">
+    <div className="min-h-dvh bg-background">
       <div className="mx-auto w-full max-w-[1400px] space-y-6 p-6">
         <PageHeader
           breadcrumbs={[{ label: 'Dashboard' }]}
@@ -447,7 +447,7 @@ export default function DashboardClient() {
             </aside>
 
             <main className="space-y-6">
-              <Card className="bg-background/80">
+              <Card className="bg-card">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle>Tonal categories</CardTitle>
                   <a
