@@ -390,7 +390,7 @@ const ScaleEditorCard = memo(({ scaleId }: ScaleEditorCardProps) => {
             />
           ))}
         </div>
-        <Button variant="outline" size="xs" onClick={() => addKey(scale.id)}>
+        <Button variant="secondary" size="xs" onClick={() => addKey(scale.id)}>
           <Plus className="size-4" />
           Add key
         </Button>
