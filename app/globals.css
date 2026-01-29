@@ -271,15 +271,15 @@
   --foreground: var(--prism-neutral-025);
   --card: var(--prism-neutral-900);
   --card-foreground: var(--prism-neutral-025);
-  --popover: var(--prism-neutral-999);
+  --popover: var(--prism-neutral-850);
   --popover-foreground: var(--prism-neutral-025);
   --primary: var(--prism-primary-350);
   --primary-foreground: var(--prism-neutral-950);
-  --secondary: var(--prism-neutral-850);
+  --secondary: var(--prism-neutral-900);
   --secondary-foreground: var(--prism-neutral-025);
-  --muted: var(--prism-neutral-800);
+  --muted: var(--prism-neutral-900);
   --muted-foreground: var(--prism-neutral-300);
-  --accent: var(--prism-neutral-850);
+  --accent: var(--prism-neutral-900);
   --accent-foreground: var(--prism-neutral-025);
   --destructive: var(--prism-negative-450);
   --border: var(--prism-neutral-850);
@@ -290,7 +290,7 @@
   --chart-3: var(--prism-positive-500);
   --chart-4: var(--prism-highlight-500);
   --chart-5: var(--prism-negative-550);
-  --sidebar: var(--prism-neutral-900);
+  --sidebar: var(--prism-neutral-950);
   --sidebar-foreground: var(--prism-neutral-025);
   --sidebar-primary: var(--prism-primary-350);
   --sidebar-primary-foreground: var(--prism-neutral-950);
