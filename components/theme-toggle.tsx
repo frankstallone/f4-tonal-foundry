@@ -1,6 +1,5 @@
 'use client'
 
-import { useMemo } from 'react'
 import { useTheme } from 'next-themes'
 import { Monitor, Moon, Sun } from 'lucide-react'
 
@@ -18,14 +17,6 @@ import {
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme()
   const current = theme ?? 'system'
-  const icon = useMemo(() => {
-    if (current === 'dark') return Moon
-    if (current === 'light') return Sun
-    return Monitor
-  }, [current])
-
-  const Icon = icon
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -36,7 +27,8 @@ export function ThemeToggle() {
             aria-label="Theme"
             title="Theme"
           >
-            <Icon />
+            <Sun className="size-4 dark:hidden" />
+            <Moon className="hidden size-4 dark:block" />
           </Button>
         }
       />

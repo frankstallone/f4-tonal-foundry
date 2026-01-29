@@ -1,3 +1,5 @@
+'use client'
+
 import * as React from 'react'
 import { Slot } from '@radix-ui/react-slot'
 
@@ -26,11 +28,72 @@ function SidebarContent({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
+  const scrollRef = React.useRef<HTMLDivElement | null>(null)
+  const [scrollState, setScrollState] = React.useState({
+    top: false,
+    bottom: false,
+  })
+
+  React.useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return undefined
+    let raf = 0
+
+    const update = () => {
+      const { scrollTop, scrollHeight, clientHeight } = el
+      const canScroll = scrollHeight > clientHeight + 1
+      const next = {
+        top: canScroll && scrollTop > 1,
+        bottom: canScroll && scrollTop + clientHeight < scrollHeight - 1,
+      }
+      setScrollState((prev) =>
+        prev.top === next.top && prev.bottom === next.bottom ? prev : next,
+      )
+    }
+
+    const onScroll = () => {
+      if (raf) cancelAnimationFrame(raf)
+      raf = requestAnimationFrame(update)
+    }
+
+    const resizeObserver = new ResizeObserver(onScroll)
+
+    update()
+    el.addEventListener('scroll', onScroll)
+    resizeObserver.observe(el)
+
+    return () => {
+      el.removeEventListener('scroll', onScroll)
+      resizeObserver.disconnect()
+      if (raf) cancelAnimationFrame(raf)
+    }
+  }, [])
+
   return (
-    <div
-      className={cn('scrollbar-hidden flex-1 overflow-y-auto', className)}
-      {...props}
-    />
+    <div className="relative flex-1 min-h-0">
+      <div
+        ref={scrollRef}
+        className={cn(
+          'scrollbar-hidden h-full min-h-0 overflow-y-auto',
+          className,
+        )}
+        {...props}
+      />
+      <div
+        aria-hidden="true"
+        className={cn(
+          'sidebar-scroll-fade-top pointer-events-none absolute inset-x-0 top-0 h-6 opacity-0 transition-opacity',
+          scrollState.top && 'opacity-100',
+        )}
+      />
+      <div
+        aria-hidden="true"
+        className={cn(
+          'sidebar-scroll-fade-bottom pointer-events-none absolute inset-x-0 bottom-0 h-6 opacity-0 transition-opacity',
+          scrollState.bottom && 'opacity-100',
+        )}
+      />
+    </div>
   )
 }
 
@@ -62,7 +125,7 @@ function SidebarGroupContent({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn('mt-3 space-y-3', className)} {...props} />
+  return <div className={cn('mt-4 space-y-4', className)} {...props} />
 }
 
 function SidebarMenu({

@@ -252,94 +252,88 @@ const KeyRow = memo(
     const pickerColor = useMemo(() => toPickerColor(value), [value])
 
     return (
-      <div className="space-y-2 border border-border bg-muted p-2">
-        <div className="flex items-center gap-2">
-          <div className="relative flex-1">
-            <DialogTrigger>
-              <AriaButton
-                aria-label="Open color picker"
-                className="absolute left-2 top-1/2 z-10 flex size-5 -translate-y-1/2 items-center justify-center rounded-full touch-target"
-              >
-                <ColorSwatch
-                  color={pickerColor}
-                  className="size-4 rounded-full"
-                />
-              </AriaButton>
-              <Popover className="z-50">
-                <Dialog className="w-72 space-y-3 rounded-lg border bg-background p-3 shadow-lg">
-                  <ColorPicker
-                    value={pickerColor}
-                    onChange={(color) =>
-                      onChange(scaleId, index, color.toString('hex'))
-                    }
-                  >
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <ColorSwatch
-                          color={pickerColor}
-                          className="size-6 rounded-sm border"
-                        />
-                        <span>Drag to update the key color.</span>
-                      </div>
-                      <ColorArea
-                        colorSpace="hsb"
-                        xChannel="saturation"
-                        yChannel="brightness"
-                        className="relative h-28 w-full overflow-hidden rounded-md border"
-                      >
-                        <ColorThumb className="size-3 rounded-full border border-background bg-white shadow" />
-                      </ColorArea>
-                      <ColorSlider colorSpace="hsb" channel="hue">
-                        <SliderTrack className="relative h-3 w-full rounded-full border">
-                          <ColorThumb className="size-3 rounded-full border border-background bg-white shadow" />
-                        </SliderTrack>
-                      </ColorSlider>
-                    </div>
-                  </ColorPicker>
-                </Dialog>
-              </Popover>
-            </DialogTrigger>
-            <Input
-              value={value}
-              onChange={(event) => onChange(scaleId, index, event.target.value)}
-              className={cn('pl-8', {
-                'border-destructive': !valid,
-              })}
-              aria-label={`Key color ${index + 1}`}
-              placeholder="#ffffff or oklch(...)"
-            />
-          </div>
-          <AlertDialog>
-            <AlertDialogTrigger
-              render={
-                <Button
-                  variant="ghost"
-                  size="icon-xs"
-                  aria-label="Remove key"
-                />
-              }
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1">
+          <DialogTrigger>
+            <AriaButton
+              aria-label="Open color picker"
+              className="absolute left-2 top-1/2 z-10 flex size-5 -translate-y-1/2 items-center justify-center rounded-full touch-target"
             >
-              <Trash2 className="size-3" />
-            </AlertDialogTrigger>
-            <AlertDialogContent size="sm">
-              <AlertDialogHeader>
-                <AlertDialogTitle>Remove this key?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This will delete the key color from the scale.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  variant="destructive"
-                  onClick={() => onRemove(scaleId, index)}
+              <ColorSwatch
+                color={pickerColor}
+                className="size-4 rounded-full"
+              />
+            </AriaButton>
+            <Popover className="z-50">
+              <Dialog className="w-72 space-y-3 rounded-lg border bg-background p-3 shadow-lg">
+                <ColorPicker
+                  value={pickerColor}
+                  onChange={(color) =>
+                    onChange(scaleId, index, color.toString('hex'))
+                  }
                 >
-                  Remove key
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <ColorSwatch
+                        color={pickerColor}
+                        className="size-6 rounded-sm border"
+                      />
+                      <span>Drag to update the key color.</span>
+                    </div>
+                    <ColorArea
+                      colorSpace="hsb"
+                      xChannel="saturation"
+                      yChannel="brightness"
+                      className="relative h-28 w-full overflow-hidden rounded-md border"
+                    >
+                      <ColorThumb className="size-3 rounded-full border border-background bg-white shadow" />
+                    </ColorArea>
+                    <ColorSlider colorSpace="hsb" channel="hue">
+                      <SliderTrack className="relative h-3 w-full rounded-full border">
+                        <ColorThumb className="size-3 rounded-full border border-background bg-white shadow" />
+                      </SliderTrack>
+                    </ColorSlider>
+                  </div>
+                </ColorPicker>
+              </Dialog>
+            </Popover>
+          </DialogTrigger>
+          <Input
+            value={value}
+            onChange={(event) => onChange(scaleId, index, event.target.value)}
+            className={cn('pl-8', {
+              'border-destructive': !valid,
+            })}
+            aria-label={`Key color ${index + 1}`}
+            placeholder="#ffffff or oklch(...)"
+          />
         </div>
+        <AlertDialog>
+          <AlertDialogTrigger
+            render={
+              <Button variant="ghost" size="icon-xs" aria-label="Remove key" />
+            }
+          >
+            <Trash2 className="size-3" />
+          </AlertDialogTrigger>
+          <AlertDialogContent size="sm">
+            <AlertDialogHeader>
+              <AlertDialogTitle>Remove this key?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will delete the key color from the scale.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                variant="destructive"
+                onClick={() => onRemove(scaleId, index)}
+              >
+                Remove key
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     )
   },
@@ -365,17 +359,22 @@ const ScaleEditorCard = memo(({ scaleId }: ScaleEditorCardProps) => {
 
   return (
     <div className="space-y-3 px-4 py-3">
-      <div className="flex items-center gap-2">
-        <Label htmlFor={`scale-name-${scale.id}`} className="sr-only">
-          Scale name
-        </Label>
+      <div className="space-y-2">
+        <div className="flex items-center justify-between gap-2">
+          <Label
+            htmlFor={`scale-name-${scale.id}`}
+            className="text-xs font-medium text-muted-foreground"
+          >
+            Scale name
+          </Label>
+          <Badge variant="outline">{scale.keys.length} keys</Badge>
+        </div>
         <Input
           id={`scale-name-${scale.id}`}
           value={scale.name}
           onChange={(event) => updateScaleName(scale.id, event.target.value)}
           placeholder="Scale name"
         />
-        <Badge variant="outline">{scale.keys.length} keys</Badge>
       </div>
       <div className="flex flex-col gap-2">
         <p className="text-xs font-medium text-muted-foreground">Keys</p>
@@ -391,12 +390,7 @@ const ScaleEditorCard = memo(({ scaleId }: ScaleEditorCardProps) => {
             />
           ))}
         </div>
-        <Button
-          variant="ghost"
-          size="xs"
-          className="w-full justify-start"
-          onClick={() => addKey(scale.id)}
-        >
+        <Button variant="outline" size="xs" onClick={() => addKey(scale.id)}>
           <Plus className="size-4" />
           Add key
         </Button>
@@ -796,12 +790,9 @@ export default function CreatePage() {
       sidebar={
         <Sidebar>
           <SidebarHeader>
-            <div className="space-y-1">
-              <p className="text-xs text-muted-foreground">Palette</p>
-              <p className="text-sm font-semibold">
-                {paletteName.trim() || `Palette ${paletteId}`}
-              </p>
-            </div>
+            <p className="text-sm font-semibold">
+              {paletteName.trim() || `Palette ${paletteId}`}
+            </p>
           </SidebarHeader>
           <SidebarContent>
             <SidebarGroup>
