@@ -106,8 +106,8 @@
   --secondary-foreground: var(--prism-secondary-900);
   --muted: var(--prism-neutral-050);
   --muted-foreground: var(--prism-neutral-650);
-  --accent: var(--prism-primary-050);
-  --accent-foreground: var(--prism-primary-900);
+  --accent: var(--prism-neutral-400);
+  --accent-foreground: var(--prism-neutral-950);
   --destructive: var(--prism-negative-550);
   --border: var(--prism-neutral-150);
   --input: var(--prism-neutral-200);
@@ -122,7 +122,7 @@
   --sidebar-foreground: var(--prism-neutral-950);
   --sidebar-primary: var(--prism-primary-550);
   --sidebar-primary-foreground: var(--prism-neutral-000);
-  --sidebar-accent: var(--prism-neutral-200);
+  --sidebar-accent: var(--prism-neutral-400);
   --sidebar-accent-foreground: var(--prism-neutral-950);
   --sidebar-border: var(--prism-neutral-150);
   --sidebar-ring: var(--prism-primary-350);
@@ -141,8 +141,8 @@
   --secondary-foreground: var(--prism-neutral-025);
   --muted: var(--prism-neutral-800);
   --muted-foreground: var(--prism-neutral-300);
-  --accent: var(--prism-primary-300);
-  --accent-foreground: var(--prism-neutral-950);
+  --accent: var(--prism-neutral-600);
+  --accent-foreground: var(--prism-neutral-025);
   --destructive: var(--prism-negative-450);
   --border: var(--prism-neutral-850);
   --input: var(--prism-neutral-700);
@@ -156,7 +156,7 @@
   --sidebar-foreground: var(--prism-neutral-025);
   --sidebar-primary: var(--prism-primary-350);
   --sidebar-primary-foreground: var(--prism-neutral-950);
-  --sidebar-accent: var(--prism-secondary-800);
+  --sidebar-accent: var(--prism-neutral-600);
   --sidebar-accent-foreground: var(--prism-neutral-025);
   --sidebar-border: var(--prism-neutral-850);
   --sidebar-ring: var(--prism-primary-300);
@@ -179,6 +179,14 @@
   .text-2xs {
     font-size: 0.625rem;
     line-height: 0.875rem;
+  }
+
+  .scrollbar-hidden {
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hidden::-webkit-scrollbar {
+    display: none;
   }
 
   @media (pointer: coarse) {

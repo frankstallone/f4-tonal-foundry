@@ -17,7 +17,6 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Label } from '@/components/ui/label'
@@ -183,6 +182,7 @@ export default function DashboardClient() {
       destinationSpace: outputSpace,
     })
   }, [selectedPalette])
+  const swatchCount = palette.values[0]?.swatches.length ?? 0
   const optimizationWeights = useMemo(() => {
     const selected =
       optimizations.find((item) => item.name === optimization) ??
@@ -305,30 +305,21 @@ export default function DashboardClient() {
 
   return (
     <AppShell
-      breadcrumbs={[{ label: 'Dashboard' }]}
       title="Palette dashboard"
       actions={
         <>
           <ThemeToggle />
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleEditPalette}
-            className="rounded-none"
-          >
+          <Button variant="outline" size="sm" onClick={handleEditPalette}>
             Edit palette
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger
-              render={
-                <Button variant="outline" size="sm" className="rounded-none" />
-              }
+              render={<Button variant="outline" size="sm" />}
             >
-              Share
+              Export
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
               <DropdownMenuGroup>
-                <DropdownMenuLabel>Share</DropdownMenuLabel>
                 <DropdownMenuItem onClick={handleCopyShareLink}>
                   Copy share link
                 </DropdownMenuItem>
@@ -344,11 +335,7 @@ export default function DashboardClient() {
               </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button
-            size="sm"
-            onClick={handleCreatePalette}
-            className="rounded-none"
-          >
+          <Button size="sm" onClick={handleCreatePalette}>
             Create palette
           </Button>
         </>
@@ -377,7 +364,7 @@ export default function DashboardClient() {
                   >
                     <SelectTrigger
                       size="sm"
-                      className="w-full rounded-none"
+                      className="w-full"
                       aria-labelledby={optimizationLabelId}
                     >
                       <SelectValue placeholder="Select optimization" />
@@ -401,7 +388,7 @@ export default function DashboardClient() {
                   >
                     <SelectTrigger
                       size="sm"
-                      className="w-full rounded-none"
+                      className="w-full"
                       aria-labelledby={contrastLabelId}
                     >
                       <SelectValue placeholder="Select contrast" />
@@ -453,6 +440,9 @@ export default function DashboardClient() {
                 Tonal categories
               </h2>
             </div>
+            <p className="text-xs text-muted-foreground tabular-nums">
+              {swatchCount} swatches
+            </p>
             <a
               href="https://medium.com/user-experience-design-1/the-universal-color-palette-9826deb94f7"
               target="_blank"
@@ -480,9 +470,6 @@ export default function DashboardClient() {
                     {scale.semantic}
                   </h3>
                 </div>
-                <p className="text-xs text-muted-foreground tabular-nums">
-                  {scale.swatches.length} swatches
-                </p>
               </div>
               <div className="mt-4 grid grid-cols-swatch gap-2">
                 {scale.swatches.map((swatch, idx) => {

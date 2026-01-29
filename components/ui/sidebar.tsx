@@ -26,7 +26,12 @@ function SidebarContent({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn('flex-1 overflow-y-auto', className)} {...props} />
+  return (
+    <div
+      className={cn('scrollbar-hidden flex-1 overflow-y-auto', className)}
+      {...props}
+    />
+  )
 }
 
 function SidebarGroup({
@@ -90,7 +95,7 @@ function SidebarMenuButton({
     <Comp
       data-active={isActive ? 'true' : undefined}
       className={cn(
-        'flex w-full items-center justify-between rounded-none px-2 py-1.5 text-left text-sm font-medium text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-1 focus-visible:ring-offset-sidebar',
+        'flex w-full items-center justify-between rounded-md px-2 py-1.5 text-left text-sm font-medium text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-1 focus-visible:ring-offset-sidebar',
         'data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground',
         className,
       )}

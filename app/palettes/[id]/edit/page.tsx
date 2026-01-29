@@ -302,7 +302,7 @@ const KeyRow = memo(
             <Input
               value={value}
               onChange={(event) => onChange(scaleId, index, event.target.value)}
-              className={cn('pl-8 rounded-none', {
+              className={cn('pl-8', {
                 'border-destructive': !valid,
               })}
               aria-label={`Key color ${index + 1}`}
@@ -316,7 +316,6 @@ const KeyRow = memo(
                   variant="ghost"
                   size="icon-xs"
                   aria-label="Remove key"
-                  className="rounded-none"
                 />
               }
             >
@@ -365,7 +364,7 @@ const ScaleEditorCard = memo(({ scaleId }: ScaleEditorCardProps) => {
   if (!scale) return null
 
   return (
-    <div className="space-y-3 border border-border bg-muted px-3 py-3">
+    <div className="space-y-3 px-4 py-3">
       <div className="flex items-center gap-2">
         <Label htmlFor={`scale-name-${scale.id}`} className="sr-only">
           Scale name
@@ -375,11 +374,8 @@ const ScaleEditorCard = memo(({ scaleId }: ScaleEditorCardProps) => {
           value={scale.name}
           onChange={(event) => updateScaleName(scale.id, event.target.value)}
           placeholder="Scale name"
-          className="rounded-none"
         />
-        <Badge variant="outline" className="rounded-none">
-          {scale.keys.length} keys
-        </Badge>
+        <Badge variant="outline">{scale.keys.length} keys</Badge>
       </div>
       <div className="flex flex-col gap-2">
         <p className="text-xs font-medium text-muted-foreground">Keys</p>
@@ -398,7 +394,7 @@ const ScaleEditorCard = memo(({ scaleId }: ScaleEditorCardProps) => {
         <Button
           variant="ghost"
           size="xs"
-          className="w-full justify-start rounded-none"
+          className="w-full justify-start"
           onClick={() => addKey(scale.id)}
         >
           <Plus className="size-4" />
@@ -411,7 +407,6 @@ const ScaleEditorCard = memo(({ scaleId }: ScaleEditorCardProps) => {
           size="icon-xs"
           aria-label="Duplicate scale"
           onClick={() => duplicateScale(scale.id)}
-          className="rounded-none"
         >
           <Copy className="size-3" />
         </Button>
@@ -422,7 +417,6 @@ const ScaleEditorCard = memo(({ scaleId }: ScaleEditorCardProps) => {
                 variant="ghost"
                 size="icon-xs"
                 aria-label="Delete scale"
-                className="rounded-none"
               />
             }
           >
@@ -735,27 +729,16 @@ export default function CreatePage() {
 
   return (
     <AppShell
-      breadcrumbs={[
-        { label: 'Dashboard', href: '/dashboard' },
-        { label: paletteName.trim() || `Palette ${paletteId}` },
-      ]}
       title="Edit palette"
       actions={
         <>
           <ThemeToggle />
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleCancel}
-            className="rounded-none"
-          >
+          <Button variant="outline" size="sm" onClick={handleCancel}>
             Cancel
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger
-              render={
-                <Button variant="outline" size="sm" className="rounded-none" />
-              }
+              render={<Button variant="outline" size="sm" />}
             >
               Share
             </DropdownMenuTrigger>
@@ -779,13 +762,7 @@ export default function CreatePage() {
           </DropdownMenu>
           <AlertDialog>
             <AlertDialogTrigger
-              render={
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  className="rounded-none"
-                />
-              }
+              render={<Button variant="destructive" size="sm" />}
             >
               Delete
             </AlertDialogTrigger>
@@ -811,7 +788,6 @@ export default function CreatePage() {
             size="sm"
             onClick={handleSavePalette}
             disabled={hasInvalidKeys}
-            className="rounded-none"
           >
             Save palette
           </Button>
@@ -838,7 +814,6 @@ export default function CreatePage() {
                     value={paletteName}
                     onChange={(event) => setPaletteName(event.target.value)}
                     placeholder="Palette name"
-                    className="rounded-none"
                   />
                 </div>
                 {lastSavedAt?.paletteId === paletteId ? (
@@ -861,7 +836,7 @@ export default function CreatePage() {
                   >
                     <SelectTrigger
                       size="sm"
-                      className="w-full rounded-none"
+                      className="w-full"
                       aria-labelledby={outputSpaceLabelId}
                     >
                       <SelectValue>
@@ -900,7 +875,7 @@ export default function CreatePage() {
                   >
                     <SelectTrigger
                       size="sm"
-                      className="w-full rounded-none"
+                      className="w-full"
                       aria-labelledby={optimizationLabelId}
                     >
                       <SelectValue placeholder="Select optimization" />
@@ -924,7 +899,7 @@ export default function CreatePage() {
                   >
                     <SelectTrigger
                       size="sm"
-                      className="w-full rounded-none"
+                      className="w-full"
                       aria-labelledby={contrastLabelId}
                     >
                       <SelectValue placeholder="Select contrast" />
@@ -942,19 +917,21 @@ export default function CreatePage() {
             </SidebarGroup>
             <SidebarGroup>
               <SidebarGroupLabel>Scales</SidebarGroupLabel>
-              <SidebarGroupContent className="space-y-3">
+              <SidebarGroupContent className="-mx-4 space-y-0 divide-y divide-border">
                 {scaleOrder.map((scaleId) => (
                   <ScaleEditorCard key={scaleId} scaleId={scaleId} />
                 ))}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full rounded-none"
-                  onClick={addScale}
-                >
-                  <Plus className="size-4" />
-                  Add scale
-                </Button>
+                <div className="px-4 py-3">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    onClick={addScale}
+                  >
+                    <Plus className="size-4" />
+                    Add scale
+                  </Button>
+                </div>
               </SidebarGroupContent>
             </SidebarGroup>
           </SidebarContent>
