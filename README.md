@@ -14,14 +14,6 @@ modern take on Kevin Muldoon's original Prism Color work, inspired by
 - Visual flags for anchors, key colors, locked endpoints, and out-of-gamut
   swatches.
 
-## How it works
-
-1. Start on the dashboard (`/dashboard`) to view all saved palettes.
-2. Create or select a palette to open the editor (`/palettes/[id]/edit`).
-3. Adjust key colors, locks, and scale settings to regenerate swatches live.
-4. Review contrast metrics and optimization presets to validate the system.
-5. Changes persist locally in the browser (no backend required).
-
 ## Tech stack
 
 - Next.js 16 App Router + React 19
