@@ -55,6 +55,17 @@ Purpose category mapping (recommended):
 - Text & Icons: 3/4 Tones + Shadows in light mode (650–900), Highlights in dark mode (025–050).
 - Borders & Dividers: 1/4 Tones only (100–350) in light mode; nearest step above base surface in dark mode (typically 800–850).
 
+## Tonal Foundry Skill
+
+The canonical agent skill for creating and using Tonal Foundry palettes lives in `.agents/skills/tonal-foundry/`.
+
+Use this repo copy as the versioned source of truth. Consumer apps can install it in either location:
+
+- Repo-local shared skill: copy `.agents/skills/tonal-foundry` into the consumer repo's `.agents/skills/` directory and commit it.
+- Codex user-global skill: copy `.agents/skills/tonal-foundry` into `${CODEX_HOME:-$HOME/.codex}/skills/` to make it available across repos on one machine.
+
+After installation, invoke it as `$tonal-foundry` when teaching humans or agents how to create palettes of named scales, define keys, generate weighted swatches, understand color-space and tonal-category behavior, or map Tonal Foundry primitives into consumer-owned semantic names.
+
 ## Token Matrix (Aligned to 22‑Step Weights)
 
 Use these weight assignments as a starting matrix; adjust per product needs while staying in-category.

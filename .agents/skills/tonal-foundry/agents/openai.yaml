@@ -1,0 +1,4 @@
+interface:
+  display_name: 'Tonal Foundry'
+  short_description: 'Create and use weighted palettes'
+  default_prompt: 'Use $tonal-foundry to create a palette of weighted scales and map it into this app.'
