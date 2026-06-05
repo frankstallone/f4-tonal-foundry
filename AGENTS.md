@@ -66,6 +66,20 @@ Use this repo copy as the versioned source of truth. Consumer apps can install i
 
 After installation, invoke it as `$tonal-foundry` when teaching humans or agents how to create palettes of named scales, define keys, generate weighted swatches, understand color-space and tonal-category behavior, or map Tonal Foundry primitives into consumer-owned semantic names.
 
+## Agent skills
+
+### Issue tracker
+
+Issues and PRDs are tracked in GitHub Issues for `frankstallone/f4-tonal-foundry`. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+This repo uses the default mattpocock/skills triage label vocabulary. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+This repo uses a single-context domain-doc layout. See `docs/agents/domain.md`.
+
 ## Token Matrix (Aligned to 22‑Step Weights)
 
 Use these weight assignments as a starting matrix; adjust per product needs while staying in-category.
