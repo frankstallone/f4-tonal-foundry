@@ -218,21 +218,23 @@ export default function DashboardClient() {
     const shareValue = searchParams.get('share')
     if (shareValue) {
       const payload = decodeSharePayload(shareValue)
-      if (payload && !shareHandledRef.current) {
-        shareHandledRef.current = true
-        const nextPalette = createPaletteRecord(stored)
-        const sharedPalette = {
-          ...nextPalette,
-          name: payload.name?.trim() || `Shared Palette ${nextPalette.id}`,
-          seed: payload.seed,
-          outputSpace: payload.outputSpace ?? nextPalette.outputSpace,
-        }
-        queueMicrotask(() => {
-          setPaletteState({
-            palettes: [sharedPalette, ...stored],
-            selectedId: sharedPalette.id,
+      if (payload) {
+        if (!shareHandledRef.current) {
+          shareHandledRef.current = true
+          const nextPalette = createPaletteRecord(stored)
+          const sharedPalette = {
+            ...nextPalette,
+            name: payload.name?.trim() || `Shared Palette ${nextPalette.id}`,
+            seed: payload.seed,
+            outputSpace: payload.outputSpace ?? nextPalette.outputSpace,
+          }
+          queueMicrotask(() => {
+            setPaletteState({
+              palettes: [sharedPalette, ...stored],
+              selectedId: sharedPalette.id,
+            })
           })
-        })
+        }
         return
       }
     }
@@ -256,12 +258,13 @@ export default function DashboardClient() {
 
   const handleCreatePalette = () => {
     const nextPalette = createPaletteRecord(paletteState.palettes)
-    usePaletteEditorStore.getState().setPalette(nextPalette)
+    usePaletteEditorStore.getState().stagePalette(nextPalette)
     router.push(`/palettes/${nextPalette.id}/edit`)
   }
 
   const handleEditPalette = () => {
     if (!selectedPalette) return
+    usePaletteEditorStore.getState().stagePalette(selectedPalette)
     router.push(`/palettes/${selectedPalette.id}/edit`)
   }
 

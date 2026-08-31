@@ -1,6 +1,5 @@
 import { create } from 'zustand'
 import {
-  loadPalettes,
   seedPalette,
   type PaletteRecord,
   type OutputSpace,
@@ -14,11 +13,13 @@ export type ScaleState = {
 
 type PaletteEditorState = {
   paletteId: number
+  initializedPaletteId: number | null
   paletteName: string
   outputSpace: OutputSpace
   scaleOrder: number[]
   scales: Record<number, ScaleState>
-  setPalette: (palette: PaletteRecord) => void
+  stagePalette: (palette: PaletteRecord) => void
+  initializePalette: (routeId: number, palette: PaletteRecord) => void
   setPaletteName: (name: string) => void
   setOutputSpace: (space: OutputSpace) => void
   updateScaleName: (id: number, name: string) => void
@@ -47,35 +48,33 @@ const buildScaleState = (palette: PaletteRecord) => {
   return { scales, scaleOrder }
 }
 
-const getInitialPaletteId = () => {
-  if (typeof window === 'undefined') return seedPalette.id
-  const match = window.location.pathname.match(/\/palettes\/(\d+)\/edit/)
-  return match ? Number(match[1]) : seedPalette.id
+const buildPaletteState = (palette: PaletteRecord) => {
+  const { scales, scaleOrder } = buildScaleState(palette)
+  return {
+    paletteId: palette.id,
+    paletteName: palette.name,
+    outputSpace: palette.outputSpace ?? 'auto',
+    scales,
+    scaleOrder,
+  }
 }
 
-const getInitialPalette = () => {
-  const paletteId = getInitialPaletteId()
-  const stored = loadPalettes()
-  return stored.find((palette) => palette.id === paletteId) ?? seedPalette
-}
-
-const initialPalette = getInitialPalette()
-const initialScaleState = buildScaleState(initialPalette)
+const initialPaletteState = buildPaletteState(seedPalette)
 
 export const usePaletteEditorStore = create<PaletteEditorState>((set) => ({
-  paletteId: initialPalette.id,
-  paletteName: initialPalette.name,
-  outputSpace: initialPalette.outputSpace ?? 'auto',
-  scaleOrder: initialScaleState.scaleOrder,
-  scales: initialScaleState.scales,
-  setPalette: (palette) => {
-    const { scales, scaleOrder } = buildScaleState(palette)
+  ...initialPaletteState,
+  initializedPaletteId: null,
+  stagePalette: (palette) => {
     set({
-      paletteId: palette.id,
-      paletteName: palette.name,
-      outputSpace: palette.outputSpace ?? 'auto',
-      scales,
-      scaleOrder,
+      ...buildPaletteState(palette),
+      initializedPaletteId: null,
+    })
+  },
+  initializePalette: (routeId, palette) => {
+    if (routeId !== palette.id) return
+    set({
+      ...buildPaletteState(palette),
+      initializedPaletteId: routeId,
     })
   },
   setPaletteName: (paletteName) => set({ paletteName }),

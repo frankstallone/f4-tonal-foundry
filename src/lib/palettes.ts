@@ -42,6 +42,39 @@ export const seedPalette: PaletteRecord = normalizePalette({
   ],
 })
 
+export const parsePaletteRouteId = (value: unknown): number | null => {
+  if (typeof value !== 'string' || !/^[1-9]\d*$/.test(value)) return null
+  const id = Number(value)
+  return Number.isSafeInteger(id) ? id : null
+}
+
+export const resolveEditorPalette = (
+  routeId: number,
+  stored: PaletteRecord[],
+  staged: PaletteRecord | null,
+): PaletteRecord => {
+  const storedPalette = stored.find((palette) => palette.id === routeId)
+  if (storedPalette) return storedPalette
+  if (staged?.id === routeId) return staged
+
+  return {
+    ...seedPalette,
+    id: routeId,
+    name: `Palette ${routeId}`,
+    seed: seedPalette.seed.map((scale) => ({
+      ...scale,
+      keys: scale.keys ? [...scale.keys] : null,
+    })),
+  }
+}
+
+export const isEditorReady = (
+  routeId: number | null,
+  initializedPaletteId: number | null,
+  paletteId: number,
+) =>
+  routeId !== null && routeId === initializedPaletteId && routeId === paletteId
+
 const getDefaultPalettes = (): PaletteRecord[] => [seedPalette]
 
 export const loadPalettes = (): PaletteRecord[] => {
