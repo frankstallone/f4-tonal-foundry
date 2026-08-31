@@ -45,7 +45,12 @@ const fillWithTweenedSwatches = (
         : prev
     })
 
-    return buildSwatch({ color, destinationSpace, isKey: false })
+    return buildSwatch({
+      color,
+      destinationSpace,
+      isKey: false,
+      targetIndex: idx,
+    })
   })
 }
 
@@ -82,7 +87,12 @@ export const buildScale = (
 
   if (!initialSwatches[0]) {
     const color = new Color('White')
-    initialSwatches[0] = buildSwatch({ color, destinationSpace, isLock: true })
+    initialSwatches[0] = buildSwatch({
+      color,
+      destinationSpace,
+      isLock: true,
+      targetIndex: 0,
+    })
   }
 
   const lastIndex = targets.length - 1
@@ -92,6 +102,7 @@ export const buildScale = (
       color,
       destinationSpace,
       isLock: true,
+      targetIndex: lastIndex,
     })
   }
 

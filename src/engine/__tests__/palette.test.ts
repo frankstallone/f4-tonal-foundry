@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { buildPalette } from '../palette'
 import { targets } from '../constants'
+import { secondaryGolden, weightContract } from './fixtures/scale-goldens'
 
 const paletteSeed = [
   { index: 1, semantic: 'primary', keys: ['oklch(52.95% 0.1609 244.63)'] },
@@ -24,6 +25,16 @@ describe('buildPalette', () => {
     expect(palette.values).toHaveLength(paletteSeed.length)
     palette.values.forEach((scale) => {
       expect(scale.swatches).toHaveLength(targets.length)
+      expect(scale.swatches.map((swatch) => swatch.weight)).toEqual(
+        weightContract,
+      )
     })
+
+    const secondary = palette.values.find(
+      (scale) => scale.semantic === secondaryGolden.semantic,
+    )
+    expect(secondary?.swatches[12].value.destination).toBe(
+      secondaryGolden.representative[1].destination,
+    )
   })
 })

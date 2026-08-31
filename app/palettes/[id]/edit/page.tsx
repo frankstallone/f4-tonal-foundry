@@ -85,12 +85,21 @@ import {
 import type { PaletteSeed, Swatch } from '@/src/engine'
 import {
   deletePalette,
-  seedPalette,
+  isEditorReady,
   loadPalettes,
+  parsePaletteRouteId,
+  resolveEditorPalette,
+  seedPalette,
   upsertPalette,
   type PaletteRecord,
   type OutputSpace,
 } from '@/src/lib/palettes'
+import {
+  contrastOptions,
+  isContrastMetric,
+  resolveSwatchDisplay,
+  type ContrastMetric,
+} from '@/src/lib/swatch-display'
 import { usePaletteEditorStore } from '@/src/store/palette-editor-store'
 import { parseColor } from '@react-stately/color'
 import { cn } from '@/lib/utils'
@@ -102,15 +111,6 @@ import {
   type SharePayload,
 } from '@/src/lib/share'
 
-const contrastOptions = [
-  'CIE L* (d65)',
-  'WCAG21',
-  'APCA',
-  'Ok L*',
-  'CAM16',
-  'HCT T%',
-]
-
 const outputSpaceOptions: Array<{ label: string; value: OutputSpace }> = [
   { label: 'Auto (match key)', value: 'auto' },
   { label: 'OKLCH', value: 'oklch' },
@@ -118,43 +118,33 @@ const outputSpaceOptions: Array<{ label: string; value: OutputSpace }> = [
   { label: 'sRGB', value: 'srgb' },
 ]
 
-const getContrastLabel = (swatch: Swatch, contrast: string) => {
-  if (contrast === 'WCAG21') {
-    return `${swatch.wcag_white.toFixed(2)}:1`
-  }
-  if (contrast === 'CIE L* (d65)') {
-    return `L* ${swatch.lab_d65_l.toFixed(2)}`
-  }
-  if (contrast === 'APCA') {
-    const white = Math.abs(swatch.apca_white)
-    const black = Math.abs(swatch.apca_black)
-    return white > black
-      ? `Lc ${swatch.apca_white.toFixed(2)}`
-      : `Lc ${swatch.apca_black.toFixed(2)}`
-  }
-  if (contrast === 'Ok L*') {
-    return `L* ${(swatch.oklab_l * 100).toFixed(2)}`
-  }
-  if (contrast === 'CAM16') {
-    return `L* ${swatch.cam16_j.toFixed(2)}`
-  }
-  if (contrast === 'HCT T%') {
-    return `T% ${swatch.hct_t.toFixed(2)}`
-  }
-  return ''
-}
-
-const swatchTextColor = (swatch: Swatch, contrast: string) => {
-  if (contrast === 'WCAG21') {
-    return swatch.lab_d65_l < 50 ? '#ffffff' : '#111111'
-  }
-  const white = Math.abs(swatch.apca_white)
-  const black = Math.abs(swatch.apca_black)
-  return white > black ? '#ffffff' : '#111111'
-}
-
 const resolveOutputSpace = (value?: OutputSpace) =>
   value && value !== 'auto' ? value : undefined
+
+type EditorStoreSnapshot = ReturnType<
+  (typeof usePaletteEditorStore)['getState']
+>
+
+const toStagedPalette = (state: EditorStoreSnapshot): PaletteRecord => ({
+  id: state.paletteId,
+  name: state.paletteName,
+  outputSpace: state.outputSpace,
+  seed: state.scaleOrder.map((scaleId, index) => {
+    const scale = state.scales[scaleId]
+    if (!scale) {
+      return {
+        index: index + 1,
+        semantic: `Scale ${index + 1}`,
+        keys: null,
+      }
+    }
+    return {
+      index: scale.id,
+      semantic: scale.name,
+      keys: scale.keys.length ? [...scale.keys] : null,
+    }
+  }),
+})
 
 const getSwatchIcons = (swatch: Swatch) => {
   const icons: Array<{ key: string; node: ReactElement }> = []
@@ -442,7 +432,7 @@ ScaleEditorCard.displayName = 'ScaleEditorCard'
 
 type ScalePreviewCardProps = {
   scaleId: number
-  contrast: string
+  contrast: ContrastMetric
   optimizationWeights: Map<number, string | undefined>
   outputSpace?: OutputSpace
 }
@@ -493,6 +483,7 @@ const ScalePreviewCard = memo(
           {scaleModel.swatches.map((swatch, idx) => {
             const weightLabel = optimizationWeights.get(Number(swatch.weight))
             const isDisabled = !weightLabel
+            const presentation = resolveSwatchDisplay(swatch, contrast)
             return (
               <div
                 key={`${scaleModel.id}-${idx}`}
@@ -511,9 +502,7 @@ const ScalePreviewCard = memo(
                     background: isDisabled
                       ? undefined
                       : swatch.value.destination,
-                    color: isDisabled
-                      ? undefined
-                      : swatchTextColor(swatch, contrast),
+                    color: isDisabled ? undefined : presentation.foreground,
                   }}
                 >
                   <div className="flex items-center justify-between">
@@ -525,7 +514,7 @@ const ScalePreviewCard = memo(
                     <span>{swatch.weight}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span>{getContrastLabel(swatch, contrast)}</span>
+                    <span>{presentation.label}</span>
                   </div>
                 </div>
               </div>
@@ -541,13 +530,19 @@ ScalePreviewCard.displayName = 'ScalePreviewCard'
 export default function CreatePage() {
   const router = useRouter()
   const params = useParams<{ id: string }>()
-  const paletteId = Number(params?.id ?? seedPalette.id)
+  const routeId = parsePaletteRouteId(params.id)
+  const paletteId = routeId ?? seedPalette.id
   const paletteName = usePaletteEditorStore((state) => state.paletteName)
   const setPaletteName = usePaletteEditorStore((state) => state.setPaletteName)
   const outputSpace = usePaletteEditorStore((state) => state.outputSpace)
   const setOutputSpace = usePaletteEditorStore((state) => state.setOutputSpace)
-  const setPalette = usePaletteEditorStore((state) => state.setPalette)
-  const currentPaletteId = usePaletteEditorStore((state) => state.paletteId)
+  const initializePalette = usePaletteEditorStore(
+    (state) => state.initializePalette,
+  )
+  const initializedPaletteId = usePaletteEditorStore(
+    (state) => state.initializedPaletteId,
+  )
+  const storePaletteId = usePaletteEditorStore((state) => state.paletteId)
   const scaleOrder = usePaletteEditorStore((state) => state.scaleOrder)
   const addScale = usePaletteEditorStore((state) => state.addScale)
   const paletteNameId = useId()
@@ -561,7 +556,12 @@ export default function CreatePage() {
   const [optimization, setOptimization] = useState(
     optimizations[0]?.name ?? 'Universal',
   )
-  const [contrast, setContrast] = useState(contrastOptions[0])
+  const [contrast, setContrast] = useState<ContrastMetric>(contrastOptions[0])
+  const editorReady = isEditorReady(
+    routeId,
+    initializedPaletteId,
+    storePaletteId,
+  )
 
   const optimizationWeights = useMemo(() => {
     const selected =
@@ -630,19 +630,25 @@ export default function CreatePage() {
   }
 
   const handleSavePalette = () => {
-    if (hasInvalidKeys) return
     const state = usePaletteEditorStore.getState()
+    if (
+      routeId === null ||
+      hasInvalidKeys ||
+      !isEditorReady(routeId, state.initializedPaletteId, state.paletteId)
+    ) {
+      return
+    }
     const seed: PaletteSeed[] = buildPaletteSeed()
 
     const nextRecord: PaletteRecord = {
-      id: state.paletteId || paletteId,
-      name: state.paletteName.trim() || `Palette ${paletteId}`,
+      id: routeId,
+      name: state.paletteName.trim() || `Palette ${routeId}`,
       seed,
       outputSpace: state.outputSpace,
     }
 
     upsertPalette(nextRecord)
-    setLastSavedAt({ paletteId, timestamp: Date.now() })
+    setLastSavedAt({ paletteId: routeId, timestamp: Date.now() })
     router.push(`/dashboard?selected=${nextRecord.id}`)
   }
 
@@ -651,7 +657,8 @@ export default function CreatePage() {
   }
 
   const handleDeletePalette = () => {
-    deletePalette(paletteId)
+    if (routeId === null) return
+    deletePalette(routeId)
     router.push('/dashboard')
   }
 
@@ -709,17 +716,17 @@ export default function CreatePage() {
   }
 
   useEffect(() => {
+    if (routeId === null) {
+      router.replace('/dashboard')
+      return
+    }
+
+    const state = usePaletteEditorStore.getState()
+    const stagedPalette = toStagedPalette(state)
     const stored = loadPalettes()
-    const storedPalette = stored.find((palette) => palette.id === paletteId)
-    if (storedPalette) {
-      setPalette(storedPalette)
-      return
-    }
-    if (currentPaletteId === paletteId) {
-      return
-    }
-    setPalette(seedPalette)
-  }, [currentPaletteId, paletteId, setPalette])
+    const resolvedPalette = resolveEditorPalette(routeId, stored, stagedPalette)
+    initializePalette(routeId, resolvedPalette)
+  }, [initializePalette, routeId, router])
 
   return (
     <AppShell
@@ -781,7 +788,7 @@ export default function CreatePage() {
           <Button
             size="sm"
             onClick={handleSavePalette}
-            disabled={hasInvalidKeys}
+            disabled={hasInvalidKeys || !editorReady}
           >
             Save palette
           </Button>
@@ -885,7 +892,9 @@ export default function CreatePage() {
                   <Select
                     value={contrast}
                     onValueChange={(value) =>
-                      setContrast(value ?? contrastOptions[0])
+                      setContrast(
+                        isContrastMetric(value) ? value : contrastOptions[0],
+                      )
                     }
                   >
                     <SelectTrigger

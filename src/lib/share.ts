@@ -48,6 +48,8 @@ export type TailwindThemeExport = {
   css: string
 }
 
+const createDictionary = <T>(): Record<string, T> => Object.create(null)
+
 const isPaletteSeed = (value: unknown): value is PaletteSeed => {
   if (!value || typeof value !== 'object') return false
   const candidate = value as PaletteSeed
@@ -116,20 +118,22 @@ export const buildExportPayload = (
 
 export const buildDtcgTokens = (name: string, scales: Scale[]): DtcgTokens => {
   const paletteKey = name.trim() || 'palette'
-  const color: DtcgTokens['color'] = {
-    [paletteKey]: {},
-  }
+  const color =
+    createDictionary<Record<string, Record<string, DtcgColorToken>>>()
+  const palette = createDictionary<Record<string, DtcgColorToken>>()
+  color[paletteKey] = palette
 
   scales.forEach((scale) => {
     const scaleKey = scale.semantic
-    if (!color[paletteKey][scaleKey]) {
-      color[paletteKey][scaleKey] = {}
+    if (!Object.hasOwn(palette, scaleKey)) {
+      palette[scaleKey] = createDictionary<DtcgColorToken>()
     }
+    const scaleTokens = palette[scaleKey]
     scale.swatches.forEach((swatch) => {
       const colorValue = toColor(swatch.color)
       const oklch = colorValue.to('oklch')
       const [l, c, h] = oklch.coords as [number, number, number]
-      color[paletteKey][scaleKey][swatch.weight] = {
+      scaleTokens[swatch.weight] = {
         $type: 'color',
         $value: {
           colorSpace: 'oklch',

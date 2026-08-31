@@ -47,14 +47,14 @@ export const toCoords = (value: string): ColorCoords => {
     .slice(0, 3) as ColorCoords
 }
 
-export const luminanceToTarget = (luminance: number) => {
+export const labD65LightnessToTarget = (lightness: number) => {
   return targets.reduce((prev, curr) => {
-    return Math.abs(curr - luminance) < Math.abs(prev - luminance) ? curr : prev
+    return Math.abs(curr - lightness) < Math.abs(prev - lightness) ? curr : prev
   })
 }
 
-export const luminanceToWeight = (luminance: number) => {
-  const value = luminanceToTarget(luminance)
+export const labD65LightnessToWeight = (lightness: number) => {
+  const value = labD65LightnessToTarget(lightness)
   const result = String((100 - value) * 10).padStart(3, '0')
   return result === '1000' ? '999' : result
 }
