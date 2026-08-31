@@ -3,7 +3,7 @@ import { toColor } from '../color'
 import { buildScale } from '../scale'
 import { targets } from '../constants'
 import {
-  blueMixedWhitePointWeights,
+  d65PlacementGolden,
   p3Golden,
   primaryHexGolden,
   secondaryGolden,
@@ -37,13 +37,33 @@ describe('buildScale', () => {
     })
   })
 
-  it('characterizes the mixed-white-point gap for CSS blue', () => {
+  it('assigns every canonical weight once for CSS blue', () => {
     const scale = buildScale({ id: 3, semantic: 'blue', keys: ['blue'] })
 
     expect(scale.swatches.map((swatch) => swatch.weight)).toEqual(
-      blueMixedWhitePointWeights,
+      weightContract,
     )
+    scale.swatches.forEach((swatch, index) => {
+      expect(swatch.index).toBe(index)
+      expect(swatch.weight).toBe(weightContract[index])
+    })
   })
+
+  it.each(d65PlacementGolden)(
+    'places $key from its Lab D65 lightness',
+    ({ key, destinationSpace, labD65L, weight, index }) => {
+      const scale = buildScale(
+        { id: 5, semantic: 'placement', keys: [key] },
+        { destinationSpace },
+      )
+      const anchor = scale.swatches.find((swatch) => swatch.isAnchor)
+
+      expect(anchor?.lab_d65_l).toBeCloseTo(labD65L, 10)
+      expect(anchor?.weight).toBe(weight)
+      expect(anchor?.index).toBe(index)
+      expect(scale.swatches[index]).toBe(anchor)
+    },
+  )
 
   it('respects an explicit destination space even for sRGB keys', () => {
     const scale = buildScale(

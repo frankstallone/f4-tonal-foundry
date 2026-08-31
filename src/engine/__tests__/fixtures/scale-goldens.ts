@@ -53,8 +53,6 @@ const cliGolden = (
 export const primaryHexGolden = {
   semantic: 'primary',
   keys: ['#3366ff'],
-  currentAnchorWeight: '550',
-  d65AnchorWeight: '500',
   representative: [
     {
       index: 0,
@@ -70,17 +68,6 @@ export const primaryHexGolden = {
     {
       index: 12,
       weight: '500',
-      destination: 'rgb(21.24% 41.29% 100%)',
-      hex: '#3669ff',
-      isAnchor: false,
-      isLock: false,
-      wcagWhite: 4.531694694681396,
-      wcagBlack: 4.634027977358351,
-      labD65L: 49.70182193040111,
-    },
-    {
-      index: 13,
-      weight: '550',
       destination: 'rgb(20% 40% 100%)',
       hex: '#3366ff',
       isAnchor: true,
@@ -88,6 +75,17 @@ export const primaryHexGolden = {
       wcagWhite: 4.682171062469547,
       wcagBlack: 4.485098839794169,
       labD65L: 48.79174705740199,
+    },
+    {
+      index: 13,
+      weight: '550',
+      destination: 'rgb(18.162% 36.721% 92.397%)',
+      hex: '#2e5eec',
+      isAnchor: false,
+      isLock: false,
+      wcagWhite: 5.367503193357179,
+      wcagBlack: 3.9124336294740534,
+      labD65L: 45.02859003134078,
     },
     {
       index: 22,
@@ -103,30 +101,28 @@ export const primaryHexGolden = {
   ],
 }
 
-export const blueMixedWhitePointWeights = [
-  '000',
-  '025',
-  '050',
-  '075',
-  '100',
-  '150',
-  '200',
-  '250',
-  '300',
-  '350',
-  '400',
-  '450',
-  '500',
-  '550',
-  '600',
-  '700',
-  '700',
-  '750',
-  '800',
-  '850',
-  '900',
-  '950',
-  '999',
+export const d65PlacementGolden = [
+  {
+    key: '#3366ff',
+    destinationSpace: 'srgb',
+    labD65L: 48.79174705740199,
+    weight: '500',
+    index: 12,
+  },
+  {
+    key: 'blue',
+    destinationSpace: 'srgb',
+    labD65L: 32.30087290398018,
+    weight: '700',
+    index: 16,
+  },
+  {
+    key: 'oklch(0.7 0.25 40)',
+    destinationSpace: 'p3',
+    labD65L: 62.04132644693074,
+    weight: '400',
+    index: 10,
+  },
 ] as const
 
 export const secondaryGolden = {
@@ -175,6 +171,14 @@ export const p3Golden = {
     {
       index: 9,
       weight: '350',
+      destination: 'color(display-p3 1 0.4274 0.173)',
+      hex: '#ff6d2f',
+      isAnchor: false,
+      isOutOfSrgb: true,
+    },
+    {
+      index: 10,
+      weight: '400',
       destination: 'color(display-p3 1 0.36335 0)',
       hex: '#ff5c00',
       isAnchor: true,

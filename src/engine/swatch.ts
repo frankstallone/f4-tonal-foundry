@@ -2,7 +2,7 @@ import Color from 'colorjs.io'
 import { weights } from './constants'
 import type { Swatch } from './types'
 import { colorToHex, toColorDTO } from './color'
-import { luminanceToWeight } from './utils'
+import { labD65LightnessToWeight } from './utils'
 
 export interface BuildSwatchOptions {
   color: Color
@@ -33,7 +33,7 @@ export const buildSwatch = ({
 }: BuildSwatchOptions): Swatch => {
   const normalized = normalizeColorToDestinationGamut(color, destinationSpace)
   const isOutOfGamut = !normalized.inGamut('srgb')
-  const weight = luminanceToWeight(normalized.lab.l)
+  const weight = labD65LightnessToWeight(normalized.lab_d65.l)
   const index = weights.findIndex((item) => item === weight)
 
   return {

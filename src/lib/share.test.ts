@@ -85,7 +85,7 @@ describe('buildDtcgTokens', () => {
     expect(Object.getPrototypeOf(palette)).toBeNull()
     expect(Object.hasOwn(palette, name)).toBe(true)
     expect(Object.getPrototypeOf(palette[name])).toBeNull()
-    expect(Object.hasOwn(palette[name], '550')).toBe(true)
+    expect(Object.hasOwn(palette[name], '500')).toBe(true)
     expect(
       Object.keys(JSON.parse(JSON.stringify(tokens)).color.Prism),
     ).toContain(name)
@@ -101,7 +101,7 @@ describe('buildDtcgTokens', () => {
       color: {
         Prism: {
           primary: {
-            '550': {
+            '500': {
               $type: 'color',
               $value: {
                 colorSpace: 'oklch',
@@ -117,7 +117,7 @@ describe('buildDtcgTokens', () => {
             },
           },
           secondary: {
-            '550': {
+            '500': {
               $type: 'color',
               $value: {
                 colorSpace: 'oklch',
