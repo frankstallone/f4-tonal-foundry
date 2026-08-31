@@ -91,6 +91,12 @@ import {
   type PaletteRecord,
   type OutputSpace,
 } from '@/src/lib/palettes'
+import {
+  contrastOptions,
+  isContrastMetric,
+  resolveSwatchDisplay,
+  type ContrastMetric,
+} from '@/src/lib/swatch-display'
 import { usePaletteEditorStore } from '@/src/store/palette-editor-store'
 import { parseColor } from '@react-stately/color'
 import { cn } from '@/lib/utils'
@@ -102,56 +108,12 @@ import {
   type SharePayload,
 } from '@/src/lib/share'
 
-const contrastOptions = [
-  'CIE L* (d65)',
-  'WCAG21',
-  'APCA',
-  'Ok L*',
-  'CAM16',
-  'HCT T%',
-]
-
 const outputSpaceOptions: Array<{ label: string; value: OutputSpace }> = [
   { label: 'Auto (match key)', value: 'auto' },
   { label: 'OKLCH', value: 'oklch' },
   { label: 'Display P3', value: 'p3' },
   { label: 'sRGB', value: 'srgb' },
 ]
-
-const getContrastLabel = (swatch: Swatch, contrast: string) => {
-  if (contrast === 'WCAG21') {
-    return `${swatch.wcag_white.toFixed(2)}:1`
-  }
-  if (contrast === 'CIE L* (d65)') {
-    return `L* ${swatch.lab_d65_l.toFixed(2)}`
-  }
-  if (contrast === 'APCA') {
-    const white = Math.abs(swatch.apca_white)
-    const black = Math.abs(swatch.apca_black)
-    return white > black
-      ? `Lc ${swatch.apca_white.toFixed(2)}`
-      : `Lc ${swatch.apca_black.toFixed(2)}`
-  }
-  if (contrast === 'Ok L*') {
-    return `L* ${(swatch.oklab_l * 100).toFixed(2)}`
-  }
-  if (contrast === 'CAM16') {
-    return `L* ${swatch.cam16_j.toFixed(2)}`
-  }
-  if (contrast === 'HCT T%') {
-    return `T% ${swatch.hct_t.toFixed(2)}`
-  }
-  return ''
-}
-
-const swatchTextColor = (swatch: Swatch, contrast: string) => {
-  if (contrast === 'WCAG21') {
-    return swatch.lab_d65_l < 50 ? '#ffffff' : '#111111'
-  }
-  const white = Math.abs(swatch.apca_white)
-  const black = Math.abs(swatch.apca_black)
-  return white > black ? '#ffffff' : '#111111'
-}
 
 const resolveOutputSpace = (value?: OutputSpace) =>
   value && value !== 'auto' ? value : undefined
@@ -442,7 +404,7 @@ ScaleEditorCard.displayName = 'ScaleEditorCard'
 
 type ScalePreviewCardProps = {
   scaleId: number
-  contrast: string
+  contrast: ContrastMetric
   optimizationWeights: Map<number, string | undefined>
   outputSpace?: OutputSpace
 }
@@ -493,6 +455,7 @@ const ScalePreviewCard = memo(
           {scaleModel.swatches.map((swatch, idx) => {
             const weightLabel = optimizationWeights.get(Number(swatch.weight))
             const isDisabled = !weightLabel
+            const presentation = resolveSwatchDisplay(swatch, contrast)
             return (
               <div
                 key={`${scaleModel.id}-${idx}`}
@@ -511,9 +474,7 @@ const ScalePreviewCard = memo(
                     background: isDisabled
                       ? undefined
                       : swatch.value.destination,
-                    color: isDisabled
-                      ? undefined
-                      : swatchTextColor(swatch, contrast),
+                    color: isDisabled ? undefined : presentation.foreground,
                   }}
                 >
                   <div className="flex items-center justify-between">
@@ -525,7 +486,7 @@ const ScalePreviewCard = memo(
                     <span>{swatch.weight}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span>{getContrastLabel(swatch, contrast)}</span>
+                    <span>{presentation.label}</span>
                   </div>
                 </div>
               </div>
@@ -561,7 +522,7 @@ export default function CreatePage() {
   const [optimization, setOptimization] = useState(
     optimizations[0]?.name ?? 'Universal',
   )
-  const [contrast, setContrast] = useState(contrastOptions[0])
+  const [contrast, setContrast] = useState<ContrastMetric>(contrastOptions[0])
 
   const optimizationWeights = useMemo(() => {
     const selected =
@@ -885,7 +846,9 @@ export default function CreatePage() {
                   <Select
                     value={contrast}
                     onValueChange={(value) =>
-                      setContrast(value ?? contrastOptions[0])
+                      setContrast(
+                        isContrastMetric(value) ? value : contrastOptions[0],
+                      )
                     }
                   >
                     <SelectTrigger
