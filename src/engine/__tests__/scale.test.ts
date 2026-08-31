@@ -12,6 +12,14 @@ import {
 
 const primarySeed = ['#3366ff']
 
+const expectWeightAndIndexContract = (scale: ReturnType<typeof buildScale>) => {
+  expect(scale.swatches.map((swatch) => swatch.weight)).toEqual(weightContract)
+  scale.swatches.forEach((swatch, index) => {
+    expect(swatch.index).toBe(index)
+    expect(swatch.weight).toBe(weightContract[index])
+  })
+}
+
 describe('buildScale', () => {
   it('builds a full scale with locks and anchor', () => {
     const scale = buildScale({ id: 0, semantic: 'primary', keys: primarySeed })
@@ -40,13 +48,16 @@ describe('buildScale', () => {
   it('assigns every canonical weight once for CSS blue', () => {
     const scale = buildScale({ id: 3, semantic: 'blue', keys: ['blue'] })
 
-    expect(scale.swatches.map((swatch) => swatch.weight)).toEqual(
-      weightContract,
+    expectWeightAndIndexContract(scale)
+  })
+
+  it('retains target-slot identity with sparse generated candidates', () => {
+    const scale = buildScale(
+      { id: 6, semantic: 'sparse', keys: primarySeed },
+      { stepsDeltaE: 20 },
     )
-    scale.swatches.forEach((swatch, index) => {
-      expect(swatch.index).toBe(index)
-      expect(swatch.weight).toBe(weightContract[index])
-    })
+
+    expectWeightAndIndexContract(scale)
   })
 
   it.each(d65PlacementGolden)(
@@ -89,6 +100,7 @@ describe('buildScale', () => {
     )
 
     expect(scale.destinationSpace).toBe('p3')
+    expectWeightAndIndexContract(scale)
     expect(scale.swatches.some((swatch) => swatch.isOutOfGamut)).toBe(true)
     expect(
       scale.swatches.some((swatch) =>

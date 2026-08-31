@@ -11,6 +11,7 @@ export interface BuildSwatchOptions {
   isKey?: boolean
   isAnchor?: boolean
   isLock?: boolean
+  targetIndex?: number
 }
 
 const normalizeColorToDestinationGamut = (
@@ -30,11 +31,15 @@ export const buildSwatch = ({
   isKey,
   isAnchor,
   isLock,
+  targetIndex,
 }: BuildSwatchOptions): Swatch => {
   const normalized = normalizeColorToDestinationGamut(color, destinationSpace)
   const isOutOfGamut = !normalized.inGamut('srgb')
-  const weight = labD65LightnessToWeight(normalized.lab_d65.l)
-  const index = weights.findIndex((item) => item === weight)
+  const weight =
+    targetIndex === undefined
+      ? labD65LightnessToWeight(normalized.lab_d65.l)
+      : weights[targetIndex]
+  const index = targetIndex ?? weights.findIndex((item) => item === weight)
 
   return {
     color: toColorDTO(normalized),
