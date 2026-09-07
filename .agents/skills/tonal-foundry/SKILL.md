@@ -1,6 +1,6 @@
 ---
 name: tonal-foundry
-description: Teach humans and agents how to create and use Tonal Foundry palettes made from weighted color scales. Use when choosing palette scales, defining keys/key colors, generating weighted swatches, interpreting L* density targets, selecting color spaces, using tonal category bands, reading gamut/contrast output, exporting palette primitives, or helping a consumer app map its own semantic names onto Tonal Foundry scale-weight values.
+description: Create or explain Tonal Foundry palettes, interpret generated output, export primitives, or map consumer semantics.
 ---
 
 # Tonal Foundry

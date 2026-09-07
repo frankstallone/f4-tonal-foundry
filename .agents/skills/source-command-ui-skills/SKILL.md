@@ -1,6 +1,6 @@
 ---
 name: 'source-command-ui-skills'
-description: 'Opinionated constraints for building better interfaces with agents.'
+description: Run the migrated ui-skills command to apply interface constraints or review a file.
 ---
 
 # source-command-ui-skills
